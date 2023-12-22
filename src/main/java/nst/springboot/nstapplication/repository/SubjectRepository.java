@@ -6,10 +6,12 @@ package nst.springboot.nstapplication.repository;
 
 import nst.springboot.nstapplication.domain.Subject;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author student2
  */
+@Repository
 public interface SubjectRepository extends JpaRepository<Subject, Long>{
 }

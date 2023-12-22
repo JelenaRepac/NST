@@ -39,12 +39,4 @@ public class Department {
     @Column(name = "skraceni_naziv")
     private String shortName;
 
-    @OneToMany(mappedBy = "department")
-    private List<Member> memberList;
-
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
-    private List<LeaderHistory> leaderHistoryList;
-
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
-    private List<SecretaryHistory> secretaryHistoryList;
 }

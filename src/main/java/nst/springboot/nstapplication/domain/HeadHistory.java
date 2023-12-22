@@ -13,19 +13,23 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "leader_history")
-public class LeaderHistory {
+@Table(name = "head_history")
+public class HeadHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "department_id")
     private Department department;
 
     @ManyToOne
-    private Member leader;
+    @JoinColumn(name = "member_id")
+    private Member head;
 
+    @Column(name = "start_date")
     private Date startDate;
 
+    @Column(name = "end_date")
     private Date endDate;
 }

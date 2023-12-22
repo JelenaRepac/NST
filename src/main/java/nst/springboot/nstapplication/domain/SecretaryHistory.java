@@ -25,8 +25,8 @@ public class SecretaryHistory {
 
     @ManyToOne
     private Member secretary;
-
+    @Column(name = "start_date")
     private Date startDate;
-
+    @Column(name = "end_date")
     private Date endDate;
 }

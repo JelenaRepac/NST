@@ -1,5 +1,6 @@
 package nst.springboot.nstapplication.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,6 +36,7 @@ public class Member {
     private ScientificField scientificField;
 
     @ManyToOne
+    @JsonBackReference
     private Department department;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)

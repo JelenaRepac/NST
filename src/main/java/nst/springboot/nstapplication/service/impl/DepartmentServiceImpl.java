@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import nst.springboot.nstapplication.domain.Department;
+import nst.springboot.nstapplication.dto.DepartmentDto;
 import nst.springboot.nstapplication.repository.DepartmentRepository;
 import nst.springboot.nstapplication.service.DepartmentService;
 import nst.springboot.nstapplication.converter.impl.DepartmentConverter;
-import nst.springboot.nstapplication.dto.DepartmentDto;
 import nst.springboot.nstapplication.exception.DepartmentAlreadyExistException;
 import org.springframework.stereotype.Service;
 
@@ -38,9 +38,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (dept.isPresent()) {
             throw new DepartmentAlreadyExistException("Department sa tim imenom postoji!");
         } else {
-            //DTO - > Entity
-            //Department department = new Department(departmentDto.getId(), departmentDto.getName());
-            Department department = departmentConverter.toEntity(departmentDto);
+             Department department = departmentConverter.toEntity(departmentDto);
             department = departmentRepository.save(department);
             return departmentConverter.toDto(department);
         }
@@ -48,10 +46,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public void delete(Long id) throws Exception {
-        //proveri da li postoji department
         Optional<Department> dept = departmentRepository.findById(id);
         if (dept.isPresent()) {
-            //postoji
             Department department = dept.get();
             departmentRepository.delete(department);
         } else {
@@ -62,14 +58,13 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public void update(DepartmentDto department) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public DepartmentDto findById(Long id) throws Exception {
         Optional<Department> dept = departmentRepository.findById(id);
         if (dept.isPresent()) {
-            //postoji
             Department department = dept.get();
             return departmentConverter.toDto(department);
         } else {
