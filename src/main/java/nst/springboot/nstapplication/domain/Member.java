@@ -24,21 +24,27 @@ public class Member {
     private Long id;
 
     private String name;
+
     private String lastname;
 
     @ManyToOne
+    @JoinColumn(name = "academic_title_id")
     private AcademicTitle academicTitle;
 
     @ManyToOne
+    @JoinColumn(name = "education_title_id")
     private EducationTitle educationTitle;
 
     @ManyToOne
+    @JoinColumn(name = "scientific_field_id")
     private ScientificField scientificField;
 
     @ManyToOne
     @JsonBackReference
+    @JoinColumn(name = "department_id")
     private Department department;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<AcademicTitleHistory> academicTitleHistoryList;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 }

@@ -25,7 +25,7 @@ public class HeadHistory {
 
     @ManyToOne
     @JoinColumn(name = "member_id")
-    private Member head;
+    private Member member;
 
     @Column(name = "start_date")
     private Date startDate;

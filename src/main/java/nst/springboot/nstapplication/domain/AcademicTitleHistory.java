@@ -32,8 +32,5 @@ public class AcademicTitleHistory {
     @JoinColumn(name = "scientific_field_id")
     private ScientificField scientificField;
 
-    @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
 
 }

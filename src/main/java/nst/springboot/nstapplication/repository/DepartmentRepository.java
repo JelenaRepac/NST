@@ -5,9 +5,12 @@
 package nst.springboot.nstapplication.repository;
 
 import java.util.Optional;
+
+import org.springframework.transaction.annotation.Transactional;
 import nst.springboot.nstapplication.domain.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 
 /**
  *
@@ -15,6 +18,10 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long>{
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public <S extends Department> S save(S entity);
 
     Optional<Department> findByName(String name);
 }
