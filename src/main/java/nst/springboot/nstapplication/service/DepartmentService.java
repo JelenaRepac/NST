@@ -13,9 +13,9 @@ import java.util.List;
  * @author student2
  */
 public interface DepartmentService {
-    DepartmentDto save(DepartmentDto departmentDto) throws Exception;
+    DepartmentDto save(DepartmentDto departmentDto);
     List<DepartmentDto> getAll();
-    void delete(Long id) throws Exception;
-    void update(DepartmentDto department) throws Exception;
-    DepartmentDto findById(Long id) throws Exception;
+    void delete(Long id) ;
+    DepartmentDto update(Long id,DepartmentDto department);
+    DepartmentDto findById(Long id);
 }

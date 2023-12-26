@@ -4,26 +4,19 @@
  */
 package nst.springboot.nstapplication.exception;
 
+import lombok.*;
+
 /**
  *
  * @author student2
  */
+@Setter
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MyErrorDetails {
-    private String message;
 
-    public MyErrorDetails() {
-    }
-
-    public MyErrorDetails(String message) {
-        this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-    
+    private String errorCode;
+    private String errorMessage;
 }

@@ -1,0 +1,91 @@
+package nst.springboot.nstapplication.service.impl;
+
+import nst.springboot.nstapplication.converter.impl.AcademicTitleConverter;
+import nst.springboot.nstapplication.domain.AcademicTitle;
+import nst.springboot.nstapplication.dto.AcademicTitleDto;
+import nst.springboot.nstapplication.exception.EntityAlreadyExistsException;
+import nst.springboot.nstapplication.exception.EntityNotFoundException;
+import nst.springboot.nstapplication.repository.AcademicTitleRepository;
+import nst.springboot.nstapplication.service.AcademicTitleService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+@Service
+public class AcademicTitleServiceImpl implements AcademicTitleService {
+    private AcademicTitleConverter academicTitleConverter;
+    private AcademicTitleRepository academicTitleRepository;
+
+    public AcademicTitleServiceImpl(AcademicTitleConverter academicTitleConverter, AcademicTitleRepository academicTitleRepository) {
+        this.academicTitleConverter = academicTitleConverter;
+        this.academicTitleRepository = academicTitleRepository;
+    }
+    @Override
+    public AcademicTitleDto save(AcademicTitleDto academicTitleDTO) {
+        Optional<AcademicTitle> aTitle = academicTitleRepository.findByName(academicTitleDTO.getName());
+        if (aTitle.isPresent()) {
+            throw new EntityAlreadyExistsException("Academic title with that name already exists!");
+        } else {
+            AcademicTitle academicTitle = academicTitleConverter.toEntity(academicTitleDTO);
+            return academicTitleConverter.toDto(academicTitleRepository.save(academicTitle));
+        }
+    }
+
+    @Override
+    public List<AcademicTitleDto> getAll() {
+        return academicTitleRepository
+                .findAll()
+                .stream().map(entity -> academicTitleConverter.toDto(entity))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void delete(Long id) {
+        Optional<AcademicTitle> title = academicTitleRepository.findById(id);
+        if (title.isPresent()) {
+            AcademicTitle title1 = title.get();
+            academicTitleRepository.delete(title1);
+        } else {
+            throw new EntityNotFoundException("Academic title does not exist!");
+        }
+    }
+
+    @Override
+    public void update(AcademicTitleDto academicTitleDTO) {
+
+    }
+
+    @Override
+    public AcademicTitleDto findById(Long id) {
+        Optional<AcademicTitle> title = academicTitleRepository.findById(id);
+        if (title.isPresent()) {
+            AcademicTitle title1 = title.get();
+            return academicTitleConverter.toDto(title1);
+        } else {
+            throw new EntityNotFoundException("Academic title does not exist!");
+        }
+    }
+
+    @Override
+    public AcademicTitleDto partialUpdate(Long id, Map<String, String> updates) {
+        Optional<AcademicTitle> existingAcademicTitle = academicTitleRepository.findById(id);
+
+        if (existingAcademicTitle.isPresent()) {
+            AcademicTitle academicTitle = existingAcademicTitle.get();
+            updates.forEach((key, value) -> {
+                switch (key) {
+                    case "name":
+                        academicTitle.setName(value);
+                        break;
+
+                }
+            });
+            academicTitleRepository.save(academicTitle);
+            return academicTitleConverter.toDto(academicTitle);
+        } else {
+            throw new EntityNotFoundException("Department not found with id: " + id);
+        }
+    }
+}

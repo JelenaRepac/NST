@@ -9,20 +9,9 @@ import java.util.List;
 import nst.springboot.nstapplication.domain.Department;
 import nst.springboot.nstapplication.dto.DepartmentDto;
 import nst.springboot.nstapplication.service.DepartmentService;
-import nst.springboot.nstapplication.exception.DepartmentAlreadyExistException;
-import nst.springboot.nstapplication.exception.MyErrorDetails;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  *
@@ -40,17 +29,17 @@ public class DepartmentController {
     @PostMapping
     public ResponseEntity<DepartmentDto> save(@Valid @RequestBody DepartmentDto departmentDto) throws Exception {
         DepartmentDto deptDto = departmentService.save(departmentDto);
-        System.out.println(deptDto.toString());
         return new ResponseEntity<>(deptDto, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<DepartmentDto>> getAll() {
         List<DepartmentDto> departments = departmentService.getAll();
-        return new ResponseEntity<>(departments, HttpStatus.OK);
+        return new ResponseEntity(departments, HttpStatus.OK);
     }
+
     @GetMapping("/{id}")
-    public DepartmentDto findById(@PathVariable("id") Long id) throws Exception {
+    public DepartmentDto findById(@PathVariable("id") Long id)  {
         return departmentService.findById(id);
     }
     @GetMapping("/query")
@@ -60,11 +49,18 @@ public class DepartmentController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) throws Exception {
-
+    public ResponseEntity<String> delete(@PathVariable Long id)  {
         departmentService.delete(id);
         return new ResponseEntity<>("Department removed!", HttpStatus.OK);
 
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DepartmentDto> update(@PathVariable(name = "id") Long id, @Valid @RequestBody DepartmentDto departmentDto) throws Exception {
+        return new ResponseEntity<>(departmentService.update(id, departmentDto), HttpStatus.OK);
+
+    }
+
+
 
 }

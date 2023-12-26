@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Propagation;
 public interface DepartmentRepository extends JpaRepository<Department, Long>{
 
     @Override
-    @Transactional(propagation = Propagation.MANDATORY)
+   // @Transactional(propagation = Propagation.MANDATORY)
     public <S extends Department> S save(S entity);
 
     Optional<Department> findByName(String name);

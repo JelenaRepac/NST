@@ -8,9 +8,9 @@ package nst.springboot.nstapplication.exception;
  *
  * @author student2
  */
-public class DepartmentAlreadyExistException extends RuntimeException{
+public class EntityAlreadyExistsException extends RuntimeException{
 
-    public DepartmentAlreadyExistException(String message) {
+    public EntityAlreadyExistsException(String message) {
         super(message);
     }
     

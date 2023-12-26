@@ -7,6 +7,8 @@ package nst.springboot.nstapplication.exception;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import nst.springboot.nstapplication.constants.ConstantsCustom;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -14,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -23,15 +25,29 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  *
  * @author student2
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    public MyErrorDetails handleEntityNotFoundException(EntityNotFoundException ex){
+        return MyErrorDetails.builder().
+                errorCode(ConstantsCustom.NOT_FOUND_CODE).
+                errorMessage(ex.getMessage()).
+                build();
+    }
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    public MyErrorDetails handleEntityNotFoundException(EntityAlreadyExistsException ex){
+        return MyErrorDetails.builder().
+                errorCode(ConstantsCustom.NOT_FOUND_CODE).
+                errorMessage(ex.getMessage()).
+                build();
+    }
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<MyErrorDetails> handleException(Exception e) {
-
-        MyErrorDetails myErrorDetails = new MyErrorDetails(e.getMessage());
-        System.out.println(e.getClass());
-        return new ResponseEntity<>(myErrorDetails, HttpStatus.NOT_FOUND);
+    public MyErrorDetails handleException(Exception e) {
+        return MyErrorDetails.builder().
+                errorCode(ConstantsCustom.NOT_FOUND_CODE).
+                errorMessage(e.getMessage()).
+                build();
 
     }
 
