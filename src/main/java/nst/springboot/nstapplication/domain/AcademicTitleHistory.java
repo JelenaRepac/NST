@@ -1,11 +1,9 @@
 package nst.springboot.nstapplication.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -13,16 +11,23 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "academic_title_history")
 public class AcademicTitleHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "start_date")
-    private Date startDate;
+    private LocalDate startDate;
+
     @Column(name = "end_date")
-    private Date endDate;
+    private LocalDate endDate;
+
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    Member member;
 
     @ManyToOne
     @JoinColumn(name = "academic_title_id")

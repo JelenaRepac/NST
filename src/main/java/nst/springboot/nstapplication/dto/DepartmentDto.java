@@ -1,9 +1,6 @@
 package nst.springboot.nstapplication.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import nst.springboot.nstapplication.domain.HeadHistory;
 import nst.springboot.nstapplication.domain.Member;
 import nst.springboot.nstapplication.domain.SecretaryHistory;
@@ -15,6 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class DepartmentDto  {
 
     private Long id;

@@ -2,23 +2,26 @@ package nst.springboot.nstapplication.converter.impl;
 
 import nst.springboot.nstapplication.converter.DtoEntityConverter;
 import nst.springboot.nstapplication.domain.ScientificField;
-import nst.springboot.nstapplication.dto.ScientificFieldDTO;
+import nst.springboot.nstapplication.dto.ScientificFieldDto;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ScientificFieldConverter implements DtoEntityConverter<ScientificFieldDTO, ScientificField> {
+public class ScientificFieldConverter implements DtoEntityConverter<ScientificFieldDto, ScientificField> {
     @Override
-    public ScientificFieldDTO toDto(ScientificField entity) {
-        return new ScientificFieldDTO(
-                entity.getId(),
-                entity.getName());
+    public ScientificFieldDto toDto(ScientificField entity) {
+        return ScientificFieldDto.builder().
+                id(entity.getId()).
+                name(entity.getName()).
+                build();
+
     }
 
     @Override
-    public ScientificField toEntity(ScientificFieldDTO dto) {
-        return new ScientificField(
-                dto.getId(),
-                dto.getName());
+    public ScientificField toEntity(ScientificFieldDto dto) {
+        return ScientificField.builder().
+                id(dto.getId()).
+                name(dto.getName()).
+                build();
     }
 
 

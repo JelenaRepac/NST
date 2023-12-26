@@ -1,14 +1,12 @@
 package nst.springboot.nstapplication.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class MemberDto {
     Long id;
 
@@ -16,11 +14,14 @@ public class MemberDto {
 
     String lastname;
 
-    AcademicTitleDTO academicTitle;
+    AcademicTitleDto academicTitle;
 
-    EducationTitleDTO educationTitle;
+    EducationTitleDto educationTitle;
 
-    ScientificFieldDTO scientificField;
+    ScientificFieldDto scientificField;
 
     DepartmentDto department;
+
+    RoleDto role;
+
 }

@@ -21,11 +21,19 @@ public class DepartmentConverter implements DtoEntityConverter<DepartmentDto, De
 
     @Override
     public DepartmentDto toDto(Department entity) {
-        return new DepartmentDto(entity.getId(), entity.getName(), entity.getShortName());
+        return DepartmentDto.builder().
+                id(entity.getId()).
+                name(entity.getName()).
+                shortName(entity.getShortName()).
+                build();
     }
 
     @Override
     public Department toEntity(DepartmentDto dto) {
-        return new Department(dto.getId(), dto.getName(),dto.getShortName());
+        return Department.builder().
+                id(dto.getId()).
+                name(dto.getName()).
+                shortName(dto.getShortName()).
+                build();
     }
 }
