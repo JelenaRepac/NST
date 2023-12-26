@@ -10,7 +10,6 @@ public interface AcademicTitleService {
     AcademicTitleDto save(AcademicTitleDto academicTitleDTO);
     List<AcademicTitleDto> getAll();
     void delete(Long id);
-    void update(AcademicTitleDto academicTitleDTO);
     AcademicTitleDto findById(Long id);
 
     AcademicTitleDto partialUpdate(Long id, Map<String, String> updates);

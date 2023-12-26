@@ -53,13 +53,9 @@ public class AcademicTitleController {
     public ResponseEntity<AcademicTitleDto> partialUpdate(
             @PathVariable(name = "id") Long id,
             @RequestBody Map<String, String> updates) {
-        try {
-            AcademicTitleDto updatedDepartment = academicTitleService.partialUpdate(id, updates);
-            return ResponseEntity.ok(updatedDepartment);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+
+        AcademicTitleDto updatedAcademicTitle = academicTitleService.partialUpdate(id, updates);
+        return ResponseEntity.ok(updatedAcademicTitle);
+
     }
 }

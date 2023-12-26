@@ -45,24 +45,21 @@ public class AcademicTitleServiceImpl implements AcademicTitleService {
     public void delete(Long id) {
         Optional<AcademicTitle> title = academicTitleRepository.findById(id);
         if (title.isPresent()) {
-            AcademicTitle title1 = title.get();
-            academicTitleRepository.delete(title1);
+            AcademicTitle academicTitle = title.get();
+            academicTitleRepository.delete(academicTitle);
         } else {
             throw new EntityNotFoundException("Academic title does not exist!");
         }
     }
 
-    @Override
-    public void update(AcademicTitleDto academicTitleDTO) {
 
-    }
 
     @Override
     public AcademicTitleDto findById(Long id) {
         Optional<AcademicTitle> title = academicTitleRepository.findById(id);
         if (title.isPresent()) {
-            AcademicTitle title1 = title.get();
-            return academicTitleConverter.toDto(title1);
+            AcademicTitle academicTitle = title.get();
+            return academicTitleConverter.toDto(academicTitle);
         } else {
             throw new EntityNotFoundException("Academic title does not exist!");
         }
@@ -85,7 +82,7 @@ public class AcademicTitleServiceImpl implements AcademicTitleService {
             academicTitleRepository.save(academicTitle);
             return academicTitleConverter.toDto(academicTitle);
         } else {
-            throw new EntityNotFoundException("Department not found with id: " + id);
+            throw new EntityNotFoundException("Academic title not found with id: " + id);
         }
     }
 }
