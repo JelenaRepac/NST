@@ -3,7 +3,9 @@ package nst.springboot.nstapplication.converter.impl;
 import nst.springboot.nstapplication.converter.DtoEntityConverter;
 import nst.springboot.nstapplication.domain.HeadHistory;
 import nst.springboot.nstapplication.dto.HeadHistoryDto;
+import org.springframework.stereotype.Component;
 
+@Component
 public class HeadHistoryConverter implements DtoEntityConverter<HeadHistoryDto, HeadHistory> {
 
     private final MemberConverter memberConverter;

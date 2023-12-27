@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import nst.springboot.nstapplication.domain.Department;
 import nst.springboot.nstapplication.dto.DepartmentDto;
+import nst.springboot.nstapplication.exception.EmptyResponseException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.repository.DepartmentRepository;
 import nst.springboot.nstapplication.service.DepartmentService;
@@ -95,7 +96,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .stream().map(entity -> departmentConverter.toDto(entity))
                 .collect(Collectors.toList());
         if(departmentDtoList.isEmpty()){
-            throw new EntityNotFoundException("There is no departments in database!");
+            throw new EmptyResponseException("There is no departments in database!");
         }
             return departmentDtoList;
     }

@@ -47,18 +47,6 @@ public class EducationTitleServiceImpl implements EducationTitleService {
     }
 
     @Override
-    public void delete(Long id) {
-        Optional<EducationTitle> title = educationTitleRepository.findById(id);
-        if (title.isPresent()) {
-            EducationTitle educationTitle = title.get();
-            educationTitleRepository.delete(educationTitle);
-        } else {
-            throw new EntityNotFoundException("Education title does not exist!");
-        }
-    }
-
-
-    @Override
     public EducationTitleDto findById(Long id) {
         Optional<EducationTitle> title = educationTitleRepository.findById(id);
         if (title.isPresent()) {

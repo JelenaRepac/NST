@@ -35,6 +35,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
                 errorMessage(ex.getMessage()).
                 build();
     }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public MyErrorDetails handleIllegalArgumentException(IllegalArgumentException ex){
+        return MyErrorDetails.builder().
+                errorCode(ConstantsCustom.NOT_FOUND_CODE).
+                errorMessage(ex.getMessage()).
+                build();
+    }
+    @ExceptionHandler(EmptyResponseException.class)
+    public MyErrorDetails handleEmptyResponseException(EmptyResponseException ex){
+        return MyErrorDetails.builder().
+                errorCode(ConstantsCustom.NO_CONTENT_CODE).
+                errorMessage(ex.getMessage()).
+                build();
+    }
     @ExceptionHandler(EntityAlreadyExistsException.class)
     public MyErrorDetails handleEntityNotFoundException(EntityAlreadyExistsException ex){
         return MyErrorDetails.builder().

@@ -3,7 +3,9 @@ package nst.springboot.nstapplication.converter.impl;
 import nst.springboot.nstapplication.converter.DtoEntityConverter;
 import nst.springboot.nstapplication.domain.SecretaryHistory;
 import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SecretaryHistoryConverter implements DtoEntityConverter<SecretaryHistoryDto, SecretaryHistory> {
 
 

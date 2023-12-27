@@ -24,5 +24,5 @@ public class MemberHeadSecretaryDto implements Serializable {
 
     private DepartmentDto department;
 
-    private RoleDto roleDTO;
+    private RoleDto role;
 }

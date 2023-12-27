@@ -40,17 +40,6 @@ public class EducationTitleController {
         return educationTitleService.findById(id);
     }
 
-    @GetMapping("/query")
-    public EducationTitleDto queryById(@RequestParam("id") Long id) throws Exception {
-        return educationTitleService.findById(id);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) throws Exception {
-        educationTitleService.delete(id);
-        return new ResponseEntity<>("Education title removed!", HttpStatus.OK);
-
-    }
 
     @PatchMapping("/{id}")
     public ResponseEntity<EducationTitleDto> partialUpdate(

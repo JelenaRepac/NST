@@ -1,55 +1,137 @@
 package nst.springboot.nstapplication.service.impl;
 
-import nst.springboot.nstapplication.converter.impl.MemberConverter;
-import nst.springboot.nstapplication.domain.Department;
-import nst.springboot.nstapplication.domain.Member;
+import jakarta.transaction.Transactional;
+import nst.springboot.nstapplication.constants.ConstantsCustom;
+import nst.springboot.nstapplication.converter.impl.*;
+import nst.springboot.nstapplication.domain.*;
 import nst.springboot.nstapplication.dto.MemberDto;
-import nst.springboot.nstapplication.repository.DepartmentRepository;
-import nst.springboot.nstapplication.repository.MemberRepository;
+import nst.springboot.nstapplication.dto.MemberHeadSecretaryDto;
+import nst.springboot.nstapplication.exception.EntityNotFoundException;
+import nst.springboot.nstapplication.exception.IllegalArgumentException;
+import nst.springboot.nstapplication.repository.*;
 import nst.springboot.nstapplication.service.MemberService;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class MemberServiceImpl implements MemberService {
 
     private MemberConverter memberConverter;
-
+    private MemberHeadSecretaryConverter memberHeadSecConverter;
+    private AcademicTitleConverter academicTitleConverter;
+    private ScientificFieldConverter scientificFieldConverter;
+    private EducationTitleConverter educationTitleConverter;
     private MemberRepository memberRepository;
-
     private DepartmentRepository departmentRepository;
+    private AcademicTitleRepository academicTitleRepository;
+    private EducationTitleRepository educationTitleRepository;
+    private ScientificFieldRepository scientificFieldRepository;
+    private AcademicTitleHistoryRepository academicTitleHistoryRepository;
+    private HeadHistoryRepository headHistoryRepository;
+    private SecretaryHistoryRepository secretaryHistoryRepository;
+    private RoleRepository roleRepository;
 
-    public MemberServiceImpl(MemberConverter memberConverter, MemberRepository memberRepository, DepartmentRepository departmentRepository) {
+
+    public MemberServiceImpl(MemberConverter memberConverter, MemberHeadSecretaryConverter memberHeadSecConverter, AcademicTitleConverter academicTitleConverter, ScientificFieldConverter scientificFieldConverter, EducationTitleConverter educationTitleConverter, MemberRepository memberRepository, DepartmentRepository departmentRepository, AcademicTitleRepository academicTitleRepository, EducationTitleRepository educationTitleRepository, ScientificFieldRepository scientificFieldRepository, AcademicTitleHistoryRepository academicTitleHistoryRepository, HeadHistoryRepository headHistoryRepository, SecretaryHistoryRepository secretaryHistoryRepository, RoleRepository roleRepository) {
         this.memberConverter = memberConverter;
+        this.memberHeadSecConverter = memberHeadSecConverter;
+        this.academicTitleConverter = academicTitleConverter;
+        this.scientificFieldConverter = scientificFieldConverter;
+        this.educationTitleConverter = educationTitleConverter;
         this.memberRepository = memberRepository;
         this.departmentRepository = departmentRepository;
+        this.academicTitleRepository = academicTitleRepository;
+        this.educationTitleRepository = educationTitleRepository;
+        this.scientificFieldRepository = scientificFieldRepository;
+        this.academicTitleHistoryRepository = academicTitleHistoryRepository;
+        this.headHistoryRepository = headHistoryRepository;
+        this.secretaryHistoryRepository = secretaryHistoryRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
-    public MemberDto save(MemberDto memberDTO) throws Exception {
-        Member member = memberConverter.toEntity(memberDTO);
-        if(member.getDepartment().getId()==null){
-            throw new Exception("Department id is required!");
-        }else{
-            Optional<Department> dep = departmentRepository.findById(member.getDepartment().getId());
-            if(dep.isEmpty()){
-                throw new Exception("Department doesn't exist!");
-            }else {
-                Department department = dep.get();
-//                System.out.println(department.getHead()+"   before");
-//                department.setAllMembers();
-//                System.out.println(department.getHead()+"   after");
-//                validateMember(member,department);
-//                memberRepository.save(member);
-//                dep.get().addMember(member);
-                departmentRepository.save(dep.get());
+    public MemberDto save(MemberHeadSecretaryDto memberDTO) {
+        Optional<Department> departmentOptional = departmentRepository.findByName(memberDTO.getDepartment().getName());
+
+        if (departmentOptional.isPresent()) {
+            Department department = departmentOptional.get();
+            Member member = memberHeadSecConverter.toEntity(memberDTO);
+            member.setDepartment(department);
+
+            AcademicTitle academicTitle = academicTitleRepository.findByName(memberDTO.getAcademicTitle().getName())
+                    .orElseGet(() -> academicTitleRepository.save(academicTitleConverter.toEntity(memberDTO.getAcademicTitle())));
+            member.setAcademicTitle(academicTitle);
+
+            EducationTitle educationTitle = educationTitleRepository.findByName(memberDTO.getEducationTitle().getName())
+                    .orElseGet(() -> educationTitleRepository.save(educationTitleConverter.toEntity(memberDTO.getEducationTitle())));
+            member.setEducationTitle(educationTitle);
+
+            ScientificField scientificField = scientificFieldRepository.findByName(memberDTO.getScientificField().getName())
+                    .orElseGet(() -> scientificFieldRepository.save(scientificFieldConverter.toEntity(memberDTO.getScientificField())));
+            member.setScientificField(scientificField);
+
+            if (member.getRole() == null) {
+                setDefaultMemberAttributes(member);
+            } else {
+                handleRoleSpecificAttributes(member);
             }
+
+            Member savedMember = memberRepository.save(member);
+            academicTitleHistoryRepository.save(AcademicTitleHistory.builder().
+                    academicTitle(member.getAcademicTitle()).
+                    member(member).scientificField(member.getScientificField()).
+                    startDate(LocalDate.now()).
+                    endDate(null).build());
+            return memberConverter.toDto(savedMember);
         }
-        return memberDTO;
-        //ako department ne postoji sacuvaj i department zajedno sa Subject/om
+
+        throw new EntityNotFoundException("Department doesn't exist!");
+    }
+
+    private void setDefaultMemberAttributes(Member member) {
+        Role defaultRole = roleRepository.findByName(ConstantsCustom.DEFAULT_ROLE).orElseThrow(() -> new EntityNotFoundException("Default role not found"));
+        member.setRole(defaultRole);
+    }
+
+    private void handleRoleSpecificAttributes(Member member) {
+        String roleName = member.getRole().getName();
+
+        switch (roleName) {
+            case ConstantsCustom.SECRETARY:
+                handleSecretaryAttributes(member);
+                break;
+            case ConstantsCustom.HEAD:
+                handleHeadAttributes(member);
+                break;
+            default:
+                throw new IllegalArgumentException("You provided unknown type!");
+        }
+    }
+
+    private void handleSecretaryAttributes(Member member) {
+        checkExistingMemberAndThrowException(member, 1L, "The department already has a secretary member.");
+        member.setRole(roleRepository.findByName(ConstantsCustom.SECRETARY).orElseThrow(() -> new EntityNotFoundException("Secretary role not found")));
+        Member savedMember = memberRepository.save(member);
+        secretaryHistoryRepository.save(new SecretaryHistory(null, savedMember.getDepartment(), savedMember, LocalDate.now(), null));
+    }
+
+    private void handleHeadAttributes(Member member) {
+        checkExistingMemberAndThrowException(member, 2L, "The department already has a head member.");
+        member.setRole(roleRepository.findByName(ConstantsCustom.HEAD).orElseThrow(() -> new EntityNotFoundException("Head role not found")));
+        Member savedMember = memberRepository.save(member);
+        headHistoryRepository.save(new HeadHistory(null, savedMember.getDepartment(), savedMember, null, LocalDate.now()));
+    }
+    private void checkExistingMemberAndThrowException(Member member, Long roleId, String errorMessage) {
+        Optional<Member> existingMember = memberRepository.findByDepartmentNameAndRoleId(member.getDepartment().getName(), roleId);
+        if (existingMember.isPresent()) {
+            throw new EntityNotFoundException(errorMessage);
+        }
     }
 
     @Override
@@ -67,38 +149,15 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void delete(Long id) throws Exception {
-//        Optional<Member> member = memberRepository.findById(id);
-//        if (member.isPresent()) {
-//            Member member1 = member.get();
-//            memberRepository.delete(member1);
-//        } else {
-//            throw new Exception("Member does not exist!");
-//        }
-    }
-
-    @Override
-    public MemberDto update(MemberDto memberDTO, Long id) throws Exception {
-        Member member1 = memberConverter.toEntity(memberDTO);
-      //  member1 = memberRepository.save(member1);
-        return memberConverter.toDto(member1);
-    }
-
-    @Override
-    public MemberDto findById(Long id) throws Exception {
-        Optional member = memberRepository.findById(id);
-        if (member.isPresent()) {
-            Member member1 = (Member) member.get();
-            return memberConverter.toDto(member1);
-        } else {
-            throw new Exception("Member title does not exist!");
+    public void delete(Long id) {
+        Optional<Member> member= memberRepository.findById(id);
+        if(member.isPresent()){
+            memberRepository.deleteById(id);
+        }
+        else {
+            throw new EntityNotFoundException("There is no member with that id in database!");
         }
     }
 
-    private void validateMember(Member newMember,Department department) throws Exception {
-//        if ((newMember.getAcademicTitle().getId().equals(7L) && department.getHead() != null)
-//                || (newMember.getAcademicTitle().getId().equals(6L) && department.getSecretary() != null)) {
-//            throw new Exception("The department already has a member with the specified academic title.");
-//        }
-    }
+
 }

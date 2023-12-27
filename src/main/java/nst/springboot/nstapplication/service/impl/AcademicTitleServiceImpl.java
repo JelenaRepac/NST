@@ -42,19 +42,6 @@ public class AcademicTitleServiceImpl implements AcademicTitleService {
     }
 
     @Override
-    public void delete(Long id) {
-        Optional<AcademicTitle> title = academicTitleRepository.findById(id);
-        if (title.isPresent()) {
-            AcademicTitle academicTitle = title.get();
-            academicTitleRepository.delete(academicTitle);
-        } else {
-            throw new EntityNotFoundException("Academic title does not exist!");
-        }
-    }
-
-
-
-    @Override
     public AcademicTitleDto findById(Long id) {
         Optional<AcademicTitle> title = academicTitleRepository.findById(id);
         if (title.isPresent()) {

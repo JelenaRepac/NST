@@ -42,6 +42,7 @@ public class DepartmentController {
     public DepartmentDto findById(@PathVariable("id") Long id)  {
         return departmentService.findById(id);
     }
+
     @GetMapping("/query")
     public Department queryById(@RequestParam("id") Long id) throws Exception {
         throw new Exception("Nije implementirana.");
