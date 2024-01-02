@@ -40,6 +40,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
     }
     @ExceptionHandler(IllegalArgumentException.class)
     public MyErrorDetails handleIllegalArgumentException(IllegalArgumentException ex){
+        log.error(ex.getMessage(),ex.getStackTrace());
         return MyErrorDetails.builder().
                 errorCode(ConstantsCustom.NOT_FOUND_CODE).
                 errorMessage(ex.getMessage()).
@@ -47,6 +48,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
     }
     @ExceptionHandler(EmptyResponseException.class)
     public MyErrorDetails handleEmptyResponseException(EmptyResponseException ex){
+        log.error(ex.getMessage(),ex.getStackTrace());
         return MyErrorDetails.builder().
                 errorCode(ConstantsCustom.NO_CONTENT_CODE).
                 errorMessage(ex.getMessage()).
@@ -54,6 +56,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
     }
     @ExceptionHandler(EntityAlreadyExistsException.class)
     public MyErrorDetails handleEntityNotFoundException(EntityAlreadyExistsException ex){
+        log.error(ex.getMessage(),ex.getStackTrace());
         return MyErrorDetails.builder().
                 errorCode(ConstantsCustom.NOT_FOUND_CODE).
                 errorMessage(ex.getMessage()).
@@ -72,7 +75,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, 
             HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        
+        log.error(ex.getMessage(),ex.getStackTrace());
         Map<String, String> errors = new HashMap<>();
         
         //pokupi sve greske koje su nastale pri validaciji vrednosti nad objektoma
