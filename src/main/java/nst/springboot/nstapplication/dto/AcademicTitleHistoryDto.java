@@ -1,5 +1,7 @@
 package nst.springboot.nstapplication.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.io.Serializable;
@@ -12,11 +14,11 @@ import java.time.LocalDate;
 @Builder
 public class AcademicTitleHistoryDto implements Serializable {
     private Long id;
-
+    @JsonIgnore
     private MemberDto member;
 
     private LocalDate startDate;
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate endDate;
 
     private AcademicTitleDto academicTitle;

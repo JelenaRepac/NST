@@ -12,6 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 @Table(name = "academic_title_history")
 public class AcademicTitleHistory {
 

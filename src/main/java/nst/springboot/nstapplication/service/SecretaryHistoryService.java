@@ -10,4 +10,6 @@ public interface SecretaryHistoryService {
     SecretaryHistoryDto getByDepartmentId(Long id);
     void delete(Long id);
     SecretaryHistoryDto findById(Long id);
+
+    List<SecretaryHistoryDto> getHistoryForDepartmentId(Long id);
 }

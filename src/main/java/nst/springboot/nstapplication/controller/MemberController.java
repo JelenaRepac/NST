@@ -1,15 +1,16 @@
 package nst.springboot.nstapplication.controller;
 
 import jakarta.validation.Valid;
-import nst.springboot.nstapplication.constants.ConstantsCustom;
+import nst.springboot.nstapplication.domain.Member;
 import nst.springboot.nstapplication.dto.MemberDto;
-import nst.springboot.nstapplication.dto.MemberHeadSecretaryDto;
+import nst.springboot.nstapplication.dto.MemberPatchRequest;
 import nst.springboot.nstapplication.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("/member")
 public class MemberController {
@@ -21,15 +22,21 @@ public class MemberController {
 
     //saving default member
     @PostMapping
-    public ResponseEntity<MemberDto> save(@Valid @RequestBody MemberHeadSecretaryDto memberDTO) throws Exception {
+    public ResponseEntity<MemberDto> save(@Valid @RequestBody MemberDto memberDTO) throws Exception {
         MemberDto member=  memberService.save(memberDTO);
         return new ResponseEntity<>(member, HttpStatus.CREATED);
     }
-//    @PutMapping("/{id}")
-//    public ResponseEntity<MemberDto> update(@Valid @RequestBody MemberHeadSecretaryDto memberDTO, @PathVariable Long id) throws Exception {
-//        MemberDto member = memberService.update(memberDTO, id);
-//        return new ResponseEntity<>(member, HttpStatus.CREATED);
-//    }
+
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<MemberDto> updateMember(@PathVariable Long id, @RequestBody MemberPatchRequest patchRequest) {
+        MemberDto updatedMember = memberService.patchUpdateMember(id, patchRequest);
+        if (updatedMember != null) {
+            return ResponseEntity.ok(updatedMember);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
     @GetMapping
     public ResponseEntity<List<MemberDto>> getAll() {
         List<MemberDto> members = memberService.getAll();
@@ -45,4 +52,5 @@ public class MemberController {
         return new ResponseEntity<>("Member removed!", HttpStatus.OK);
 
     }
+
 }

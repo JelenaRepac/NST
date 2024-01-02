@@ -8,11 +8,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import nst.springboot.nstapplication.converter.impl.MemberConverter;
 import nst.springboot.nstapplication.domain.Department;
+import nst.springboot.nstapplication.domain.Member;
 import nst.springboot.nstapplication.dto.DepartmentDto;
+import nst.springboot.nstapplication.dto.MemberDto;
 import nst.springboot.nstapplication.exception.EmptyResponseException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.repository.DepartmentRepository;
+import nst.springboot.nstapplication.repository.HeadHistoryRepository;
+import nst.springboot.nstapplication.repository.SecretaryHistoryRepository;
 import nst.springboot.nstapplication.service.DepartmentService;
 import nst.springboot.nstapplication.converter.impl.DepartmentConverter;
 import nst.springboot.nstapplication.exception.EntityAlreadyExistsException;
@@ -28,11 +33,21 @@ public class DepartmentServiceImpl implements DepartmentService {
     private DepartmentConverter departmentConverter;
     private DepartmentRepository departmentRepository;
 
+    private SecretaryHistoryRepository secretaryHistoryRepository;
+    private HeadHistoryRepository headHistoryRepository;
+    private MemberConverter memberConverter;
+
     public DepartmentServiceImpl(
             DepartmentRepository departmentRepository,
-            DepartmentConverter departmentConverter) {
+            DepartmentConverter departmentConverter,
+            SecretaryHistoryRepository secretaryHistoryRepository,
+            HeadHistoryRepository headHistoryRepository,
+            MemberConverter memberConverter) {
         this.departmentRepository = departmentRepository;
         this.departmentConverter = departmentConverter;
+        this.secretaryHistoryRepository=secretaryHistoryRepository;
+        this.headHistoryRepository=headHistoryRepository;
+        this.memberConverter= memberConverter;
     }
 
     @Override
@@ -90,13 +105,41 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    public MemberDto getActiveSecretaryForDepartment(Long id) {
+        Optional<Department> department= departmentRepository.findById(id);
+        if(!department.isPresent()){
+            throw new EntityNotFoundException("There is no department with id: "+id);
+        }
+          Optional<Member> secretary = secretaryHistoryRepository.findCurrentSecretaryByDepartmentId(id);
+          if(secretary.isPresent()){
+              return memberConverter.toDto(secretary.get());
+          }else{
+              throw new EntityNotFoundException("There is no active secretary for "+department.get().getName());
+          }
+    }
+
+    @Override
+    public MemberDto getActiveHeadForDepartment(Long id) {
+        Optional<Department> department= departmentRepository.findById(id);
+        if(!department.isPresent()){
+            throw new EntityNotFoundException("There is no department with id: "+id);
+        }
+        Optional<Member> head = headHistoryRepository.findCurrentHeadByDepartmentId(id);
+        if(head.isPresent()){
+            return memberConverter.toDto(head.get());
+        }else{
+            throw new EntityNotFoundException("There is no active head for "+department.get().getName());
+        }
+    }
+
+    @Override
     public List<DepartmentDto> getAll() {
         List<DepartmentDto> departmentDtoList = departmentRepository
                 .findAll()
                 .stream().map(entity -> departmentConverter.toDto(entity))
                 .collect(Collectors.toList());
         if(departmentDtoList.isEmpty()){
-            throw new EmptyResponseException("There is no departments in database!");
+            throw new EmptyResponseException("There are no departments in database!");
         }
             return departmentDtoList;
     }

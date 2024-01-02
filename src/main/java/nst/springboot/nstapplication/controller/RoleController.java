@@ -16,6 +16,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/role")
 public class RoleController {
+
+    //Controller for roles
+    //ENDPOINTS -> saving, getAll, getById, partialUpdate
     private RoleService roleService;
 
     public RoleController(RoleService roleService) {

@@ -1,5 +1,6 @@
 package nst.springboot.nstapplication.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
 import nst.springboot.nstapplication.domain.Department;
@@ -22,6 +23,6 @@ public class SecretaryHistoryDto implements Serializable {
     private MemberDto member;
 
     private LocalDate startDate;
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate endDate;
 }

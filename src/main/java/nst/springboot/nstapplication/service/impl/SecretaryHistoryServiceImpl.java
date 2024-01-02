@@ -3,11 +3,13 @@ package nst.springboot.nstapplication.service.impl;
 import nst.springboot.nstapplication.converter.impl.SecretaryHistoryConverter;
 import nst.springboot.nstapplication.domain.SecretaryHistory;
 import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
+import nst.springboot.nstapplication.exception.EmptyResponseException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.repository.SecretaryHistoryRepository;
 import nst.springboot.nstapplication.service.SecretaryHistoryService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,10 +35,17 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
 
     @Override
     public List<SecretaryHistoryDto> getAll() {
-        return repository
+        List<SecretaryHistoryDto> secretaryHistoryDtoList = repository
                 .findAll()
-                .stream().map(entity -> secretaryHistoryConverter.toDto(entity))
+                .stream()
+                .map(entity -> secretaryHistoryConverter.toDto(entity))
                 .collect(Collectors.toList());
+
+        if (secretaryHistoryDtoList.isEmpty()) {
+            throw new EntityNotFoundException("");
+        }
+
+        return secretaryHistoryDtoList;
     }
     @Override
     public SecretaryHistoryDto getByDepartmentId(Long id){
@@ -67,5 +76,18 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
         } else {
             throw new EntityNotFoundException("Secretary history not exist!");
         }
+    }
+
+    @Override
+    public List<SecretaryHistoryDto> getHistoryForDepartmentId(Long id) {
+        List<SecretaryHistory> secretaryHistoryList = repository.findByDepartmentId(id);
+        if(secretaryHistoryList.isEmpty()){
+            throw new EmptyResponseException("There are no secretary history for department!");
+        }
+        List<SecretaryHistoryDto> secretaryHistoryDtoList= new ArrayList<>();
+        for(SecretaryHistory sc : secretaryHistoryList){
+            secretaryHistoryDtoList.add(secretaryHistoryConverter.toDto(sc));
+        }
+        return secretaryHistoryDtoList;
     }
 }

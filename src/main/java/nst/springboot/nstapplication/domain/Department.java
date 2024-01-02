@@ -37,4 +37,5 @@ public class Department {
     @Column(name = "short_name")
     private String shortName;
 
+
 }

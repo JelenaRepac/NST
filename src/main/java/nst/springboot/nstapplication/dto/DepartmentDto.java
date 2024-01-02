@@ -16,8 +16,9 @@ import java.util.List;
 public class DepartmentDto  {
 
     private Long id;
-
+    private String href;
     private String name;
-
     private String shortName;
+
+
 }

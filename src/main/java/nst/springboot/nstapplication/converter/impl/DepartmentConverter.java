@@ -25,6 +25,7 @@ public class DepartmentConverter implements DtoEntityConverter<DepartmentDto, De
                 id(entity.getId()).
                 name(entity.getName()).
                 shortName(entity.getShortName()).
+                href("http://localhost:8080/department/"+entity.getId()).
                 build();
     }
 

@@ -34,11 +34,22 @@ public class DataLoader implements CommandLineRunner {
                     Role.builder().name("Head").build(),
                     Role.builder().name("Default").build()));
         }
-        academicTitleRepository.save(AcademicTitle.builder().name("Assistant").build());
-        educationTitleRepository.save(EducationTitle.builder().name("Master engineer").build());
-        scientificFieldRepository.save(ScientificField.builder().name("Software engineering").build());
+        if(academicTitleRepository.findAll().isEmpty()){
+            academicTitleRepository.save(AcademicTitle.builder().name("Assistant").build());
 
-        departmentRepository.save(Department.builder().name("Laboratorija za softversko inženjerstvo").shortName("SILAB").build());
+        }
+        if(educationTitleRepository.findAll().isEmpty()){
+            educationTitleRepository.save(EducationTitle.builder().name("Master engineer").build());
+
+        }
+        if(scientificFieldRepository.findAll().isEmpty()){
+            scientificFieldRepository.save(ScientificField.builder().name("Software engineering").build());
+
+        }
+        if(departmentRepository.findAll().isEmpty()){
+            departmentRepository.save(Department.builder().name("Laboratorija za softversko inženjerstvo").shortName("SILAB").build());
+
+        }
 
 
 

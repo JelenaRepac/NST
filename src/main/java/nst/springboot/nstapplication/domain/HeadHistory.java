@@ -1,10 +1,10 @@
 package nst.springboot.nstapplication.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
 @Getter
@@ -31,4 +31,6 @@ public class HeadHistory {
 
     @Column(name = "end_date")
     private LocalDate endDate;
+
+
 }

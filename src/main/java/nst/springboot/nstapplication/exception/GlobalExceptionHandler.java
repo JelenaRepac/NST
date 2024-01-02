@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import nst.springboot.nstapplication.constants.ConstantsCustom;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,10 +27,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  * @author student2
  */
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
 
     @ExceptionHandler(EntityNotFoundException.class)
     public MyErrorDetails handleEntityNotFoundException(EntityNotFoundException ex){
+        log.error(ex.getMessage(),ex.getStackTrace());
         return MyErrorDetails.builder().
                 errorCode(ConstantsCustom.NOT_FOUND_CODE).
                 errorMessage(ex.getMessage()).
@@ -58,6 +61,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
     }
     @ExceptionHandler(Exception.class)
     public MyErrorDetails handleException(Exception e) {
+        log.error(e.getMessage(),e.getStackTrace());
         return MyErrorDetails.builder().
                 errorCode(ConstantsCustom.NOT_FOUND_CODE).
                 errorMessage(e.getMessage()).

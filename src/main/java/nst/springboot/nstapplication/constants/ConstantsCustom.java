@@ -11,4 +11,5 @@ public class ConstantsCustom {
     public static final String SECRETARY = "Secretary";
     public static final String HEAD = "Head";
     public static final String DEFAULT_ROLE = "Default";
+    public static final Long SECRETARY_ROLE_ID = 1L;
 }

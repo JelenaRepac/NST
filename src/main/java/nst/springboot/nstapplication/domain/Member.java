@@ -28,23 +28,22 @@ public class Member {
     @JoinColumn(name = "academic_title_id")
     private AcademicTitle academicTitle;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "education_title_id")
     private EducationTitle educationTitle;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "scientific_field_id")
     private ScientificField scientificField;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JsonBackReference
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AcademicTitleHistory> academicTitleHistories;
+
 }

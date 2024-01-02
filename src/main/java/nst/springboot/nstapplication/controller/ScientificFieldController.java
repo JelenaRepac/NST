@@ -15,6 +15,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/scientificField")
 public class ScientificFieldController {
+    //Controller for scientificField
+    //ENDPOINTS -> saving, getAll, getById, partialUpdate
+
     private ScientificFieldService scientificFieldService;
 
     public ScientificFieldController(ScientificFieldService scientificFieldService) {

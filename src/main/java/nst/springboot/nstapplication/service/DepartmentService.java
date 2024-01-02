@@ -5,6 +5,7 @@
 package nst.springboot.nstapplication.service;
 
 import nst.springboot.nstapplication.dto.DepartmentDto;
+import nst.springboot.nstapplication.dto.MemberDto;
 
 import java.util.List;
 
@@ -18,4 +19,8 @@ public interface DepartmentService {
     void delete(Long id) ;
     DepartmentDto update(Long id,DepartmentDto department);
     DepartmentDto findById(Long id);
+
+    MemberDto getActiveSecretaryForDepartment(Long id);
+
+    MemberDto getActiveHeadForDepartment(Long id);
 }
