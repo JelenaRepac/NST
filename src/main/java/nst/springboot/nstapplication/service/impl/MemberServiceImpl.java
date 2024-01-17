@@ -124,14 +124,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private void handleSecretaryAttributes(Member member) {
-        checkExistingMemberAndThrowException(member, 1L, "The department already has a secretary member.");
+        checkExistingMemberAndThrowException(member, ConstantsCustom.SECRETARY_ROLE_ID, "The department already has a secretary member.");
         member.setRole(roleRepository.findByName(ConstantsCustom.SECRETARY).orElseThrow(() -> new EntityNotFoundException("Secretary role not found")));
         Member savedMember = memberRepository.save(member);
         secretaryHistoryRepository.save(new SecretaryHistory(null, savedMember.getDepartment(), savedMember, LocalDate.now(), null));
     }
 
     private void handleHeadAttributes(Member member) {
-        checkExistingMemberAndThrowException(member, 2L, "The department already has a head member.");
+        checkExistingMemberAndThrowException(member, ConstantsCustom.HEAD_ROLE_ID, "The department already has a head member.");
         member.setRole(roleRepository.findByName(ConstantsCustom.HEAD).orElseThrow(() -> new EntityNotFoundException("Head role not found")));
         Member savedMember = memberRepository.save(member);
         headHistoryRepository.save(new HeadHistory(null, savedMember.getDepartment(), savedMember, LocalDate.now(),null));
@@ -288,7 +288,6 @@ public class MemberServiceImpl implements MemberService {
                 }
                 break;
         }
-
 
        switch (role.getName()){
            case(ConstantsCustom.SECRETARY):

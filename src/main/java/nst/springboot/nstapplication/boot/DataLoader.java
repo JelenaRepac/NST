@@ -28,28 +28,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if(roleRepository.findAll().isEmpty()){
-            roleRepository.saveAll(List.of(
-                    Role.builder().name("Secretary").build(),
-                    Role.builder().name("Head").build(),
-                    Role.builder().name("Default").build()));
-        }
-        if(academicTitleRepository.findAll().isEmpty()){
-            academicTitleRepository.save(AcademicTitle.builder().name("Assistant").build());
 
-        }
-        if(educationTitleRepository.findAll().isEmpty()){
-            educationTitleRepository.save(EducationTitle.builder().name("Master engineer").build());
-
-        }
-        if(scientificFieldRepository.findAll().isEmpty()){
-            scientificFieldRepository.save(ScientificField.builder().name("Software engineering").build());
-
-        }
-        if(departmentRepository.findAll().isEmpty()){
-            departmentRepository.save(Department.builder().name("Laboratorija za softversko inženjerstvo").shortName("SILAB").build());
-
-        }
 
 
 

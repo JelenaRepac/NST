@@ -1,0 +1,9 @@
+UPDATE tbl_department SET member_head_id = 1, member_sec_id = 2 WHERE id = 1;
+UPDATE tbl_department SET member_head_id = 1, member_sec_id = 4 WHERE id = 2;
+UPDATE tbl_department SET member_head_id = 2, member_sec_id = 1 WHERE id = 3;
+UPDATE tbl_department SET member_head_id = 2, member_sec_id = 3 WHERE id = 4;
+UPDATE tbl_department SET member_head_id = 1, member_sec_id = 3 WHERE id = 5;
+UPDATE tbl_department SET member_head_id = 3, member_sec_id = 4 WHERE id = 6;
+UPDATE tbl_department SET member_head_id = 4, member_sec_id = 2 WHERE id = 7;
+UPDATE tbl_department SET member_head_id = 3, member_sec_id = 1 WHERE id = 8;
+UPDATE tbl_department SET member_head_id = 4, member_sec_id = 2 WHERE id = 9;

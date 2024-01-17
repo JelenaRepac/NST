@@ -1,0 +1,77 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+   <!-- kreiraj tabelu depratment-->
+    <changeSet id="create-department" author="jelena">
+        <sqlFile path="ddl/create-department.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+    <!-- popuni tabelu depratment-->
+    <changeSet id="init-department" author="jelena">
+        <sqlFile path="dml/init-department.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- popuni tabelu academic title-->
+    <changeSet id="create-academic-title" author="jelena">
+        <sqlFile path="ddl/create-academic-title.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- popuni tabelu education title-->
+    <changeSet id="create-education-title" author="jelena">
+        <sqlFile path="ddl/create-education-title.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- popuni tabelu scientific field-->
+    <changeSet id="create-scientific-field" author="jelena">
+        <sqlFile path="ddl/create-scientific-field.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="create-role" author="jelena">
+        <sqlFile path="ddl/create-role.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- popuni tabelu member-->
+    <changeSet id="create-member" author="jelena">
+        <sqlFile path="ddl/create-member.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="create-ath" author="jelena">
+        <sqlFile path="ddl/create-ath.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="create-head-history" author="jelena">
+        <sqlFile path="ddl/create-head-history.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="create-secretary-history" author="jelena">
+        <sqlFile path="ddl/create-secretary-history.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="init-academic-title" author="jelena">
+        <sqlFile path="dml/init-academic-title.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="init-education-title" author="jelena">
+        <sqlFile path="dml/init-education-title.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="init-scientific-field" author="jelena">
+        <sqlFile path="dml/init-scientific-field.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="init-role" author="jelena">
+        <sqlFile path="dml/init-role.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="init-member" author="jelena">
+        <sqlFile path="dml/init-member.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="init-ath" author="jelena">
+        <sqlFile path="dml/init_ath.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+
+
+</databaseChangeLog>
