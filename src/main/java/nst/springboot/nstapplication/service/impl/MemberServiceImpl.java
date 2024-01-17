@@ -176,6 +176,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+
     @Override
     public MemberDto patchUpdateMember(Long memberId, MemberPatchRequest patchRequest) {
         Member existingMember = memberRepository.findById(memberId).orElse(null);
@@ -193,13 +194,57 @@ public class MemberServiceImpl implements MemberService {
             if (patchRequest.getAcademicTitle() != null && !patchRequest.getAcademicTitle().equals(existingMember.getAcademicTitle())) {
                 handleAcademicTitleUpdate(existingMember, patchRequest.getAcademicTitle());
             }
-
+            if (patchRequest.getDepartment() != null && !patchRequest.getDepartment().equals(existingMember.getDepartment())) {
+                handleDepartmentUpdate(existingMember, patchRequest.getDepartment());
+            }
+            if (patchRequest.getEducationTitle() != null && !patchRequest.getEducationTitle().equals(existingMember.getEducationTitle())) {
+                handleEducationTitle(existingMember, patchRequest.getEducationTitle());
+            }
             existingMember = memberRepository.save(existingMember);
 
             return memberConverter.toDto(existingMember);
         }
 
         return null;
+    }
+
+    @Override
+    public MemberDto findById(Long id) {
+        Optional<Member> member = memberRepository.findById(id);
+        if (member.isPresent()) {
+            return memberConverter.toDto(member.get());
+        } else {
+            throw new EntityNotFoundException("Member does not exist!");
+        }
+    }
+
+    private void handleEducationTitle(Member existingMember, EducationTitleDto educationTitle) {
+
+        Optional<EducationTitle> existingEducationTitle= educationTitleRepository.findByName(educationTitle.getName());
+        if(existingEducationTitle.isPresent()){
+            existingMember.setEducationTitle(existingEducationTitle.get());
+        }
+        else{
+            EducationTitle newEducationTitle= educationTitleRepository.save(educationTitleConverter.toEntity(educationTitle));
+            existingMember.setEducationTitle(newEducationTitle);
+        }
+
+    }
+
+    private void handleDepartmentUpdate(Member existingMember, DepartmentDto department) {
+        if(existingMember.getRole().getName().equals("Secretary") ||existingMember.getRole().getName().equals("Head") ){
+            throw new IllegalArgumentException("Member can't change department if it is at Head or Secretary position!");
+        }
+        else{
+            Optional<Department> existingDepartment= departmentRepository.findByName(department.getName());
+            if(existingDepartment.isPresent()){
+                existingMember.setDepartment(existingDepartment.get());
+            }
+            else{
+                Department newDepartment= departmentRepository.save(departmentConverter.toEntity(department));
+                existingMember.setDepartment(newDepartment);
+            }
+        }
     }
 
     private void handleAcademicTitleUpdate(Member existingMember, AcademicTitleDto academicTitle) {

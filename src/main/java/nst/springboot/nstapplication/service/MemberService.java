@@ -14,4 +14,6 @@ public interface MemberService {
     void delete(Long id) ;
 
     MemberDto patchUpdateMember(Long memberId, MemberPatchRequest patchRequest);
+
+    MemberDto findById(Long id);
 }

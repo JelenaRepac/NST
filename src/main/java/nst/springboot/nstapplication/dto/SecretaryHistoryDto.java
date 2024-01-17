@@ -17,12 +17,13 @@ import java.time.LocalDate;
 public class SecretaryHistoryDto implements Serializable {
 
     private Long id;
-
-    private DepartmentDto department;
-
-    private MemberDto member;
-
     private LocalDate startDate;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate endDate;
+    private MemberDto member;
+    private DepartmentDto department;
+
+
+
+
 }

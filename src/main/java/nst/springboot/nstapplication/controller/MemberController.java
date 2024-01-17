@@ -42,6 +42,11 @@ public class MemberController {
         List<MemberDto> members = memberService.getAll();
         return new ResponseEntity<>(members, HttpStatus.OK);
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<MemberDto> getMemberById(@PathVariable("id") Long id) {
+        MemberDto member = memberService.findById(id);
+        return new ResponseEntity<>(member, HttpStatus.OK);
+    }
     @GetMapping("/department/{id}")
     public ResponseEntity<List<MemberDto>> findByDepartmentId(@PathVariable("id") Long id) {
         return new ResponseEntity<>(memberService.getAllByDepartmentId(id), HttpStatus.OK) ;
