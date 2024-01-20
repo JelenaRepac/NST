@@ -28,6 +28,8 @@ public class MemberServiceImpl implements MemberService {
     private AcademicTitleConverter academicTitleConverter;
     private ScientificFieldConverter scientificFieldConverter;
     private EducationTitleConverter educationTitleConverter;
+    private SecretaryHistoryConverter secretaryHistoryConverter;
+    private HeadHistoryConverter headHistoryConverter;
     private MemberRepository memberRepository;
     private DepartmentRepository departmentRepository;
     private AcademicTitleRepository academicTitleRepository;
@@ -40,7 +42,7 @@ public class MemberServiceImpl implements MemberService {
     private RoleConverter roleConverter;
     private DepartmentConverter departmentConverter;
 
-    public MemberServiceImpl(MemberConverter memberConverter, AcademicTitleConverter academicTitleConverter, ScientificFieldConverter scientificFieldConverter, EducationTitleConverter educationTitleConverter, MemberRepository memberRepository, DepartmentRepository departmentRepository, AcademicTitleRepository academicTitleRepository, EducationTitleRepository educationTitleRepository, ScientificFieldRepository scientificFieldRepository, AcademicTitleHistoryRepository academicTitleHistoryRepository, HeadHistoryRepository headHistoryRepository, SecretaryHistoryRepository secretaryHistoryRepository, RoleRepository roleRepository, RoleConverter roleConverter, DepartmentConverter departmentConverter) {
+    public MemberServiceImpl(MemberConverter memberConverter, AcademicTitleConverter academicTitleConverter, ScientificFieldConverter scientificFieldConverter, EducationTitleConverter educationTitleConverter, MemberRepository memberRepository, DepartmentRepository departmentRepository, AcademicTitleRepository academicTitleRepository, EducationTitleRepository educationTitleRepository, ScientificFieldRepository scientificFieldRepository, AcademicTitleHistoryRepository academicTitleHistoryRepository, HeadHistoryRepository headHistoryRepository, SecretaryHistoryRepository secretaryHistoryRepository, RoleRepository roleRepository, RoleConverter roleConverter, DepartmentConverter departmentConverter, SecretaryHistoryConverter secretarHistoryConventer, HeadHistoryConverter headHistoryConverter) {
         this.memberConverter = memberConverter;
         this.academicTitleConverter = academicTitleConverter;
         this.scientificFieldConverter = scientificFieldConverter;
@@ -56,34 +58,66 @@ public class MemberServiceImpl implements MemberService {
         this.roleRepository = roleRepository;
         this.roleConverter = roleConverter;
         this.departmentConverter = departmentConverter;
+        this.secretaryHistoryConverter = secretarHistoryConventer;
+        this.headHistoryConverter=headHistoryConverter;
     }
 
     @Override
     @Transactional(rollbackOn = Exception.class)
     public MemberDto save(MemberDto memberDTO) throws Exception {
+
         Optional<Member> existingMember = memberRepository.findByFirstnameAndLastname(memberDTO.getFirstname(), memberDTO.getLastname());
-        if(existingMember.isPresent()){
+
+        if (existingMember.isPresent()) {
             throw new EntityAlreadyExistsException("Member already exists in the database!");
         }
-
-        Optional<Department> departmentOptional = departmentRepository.findByName(memberDTO.getDepartment().getName());
-
+        Optional<Department> departmentOptional;
+        if(memberDTO.getDepartment().getId()!=null){
+            departmentOptional = departmentRepository.findById(memberDTO.getDepartment().getId());
+        }
+        else {
+            departmentOptional = departmentRepository.findByName(memberDTO.getDepartment().getName());
+        }
         if (departmentOptional.isPresent()) {
             Department department = departmentOptional.get();
             Member member = memberConverter.toEntity(memberDTO);
             member.setDepartment(department);
-
-            AcademicTitle academicTitle = academicTitleRepository.findByName(memberDTO.getAcademicTitle().getName())
-                    .orElseGet(() -> academicTitleRepository.save(academicTitleConverter.toEntity(memberDTO.getAcademicTitle())));
-            member.setAcademicTitle(academicTitle);
-
-            EducationTitle educationTitle = educationTitleRepository.findByName(memberDTO.getEducationTitle().getName())
-                    .orElseGet(() -> educationTitleRepository.save(educationTitleConverter.toEntity(memberDTO.getEducationTitle())));
-            member.setEducationTitle(educationTitle);
-
-            ScientificField scientificField = scientificFieldRepository.findByName(memberDTO.getScientificField().getName())
-                    .orElseGet(() -> scientificFieldRepository.save(scientificFieldConverter.toEntity(memberDTO.getScientificField())));
-            member.setScientificField(scientificField);
+            AcademicTitle academicTitle;
+            if(memberDTO.getAcademicTitle().getId()!=null){
+                Optional<AcademicTitle> existingAcademicTitle = academicTitleRepository.findById(memberDTO.getAcademicTitle().getId());
+                if(existingAcademicTitle.isPresent()){
+                    member.setAcademicTitle(existingAcademicTitle.get());
+                }
+            }
+            else{
+                academicTitle= academicTitleRepository.findByName(memberDTO.getAcademicTitle().getName())
+                        .orElseGet(() -> academicTitleRepository.save(academicTitleConverter.toEntity(memberDTO.getAcademicTitle())));
+                member.setAcademicTitle(academicTitle);
+            }
+            EducationTitle educationTitle;
+            if(memberDTO.getEducationTitle().getId()!=null){
+                Optional<EducationTitle> existingEducationTitle = educationTitleRepository.findById(memberDTO.getEducationTitle().getId());
+                if(existingEducationTitle.isPresent()){
+                    member.setEducationTitle(existingEducationTitle.get());
+                }
+            }
+            else{
+                educationTitle = educationTitleRepository.findByName(memberDTO.getEducationTitle().getName())
+                        .orElseGet(() -> educationTitleRepository.save(educationTitleConverter.toEntity(memberDTO.getEducationTitle())));
+                member.setEducationTitle(educationTitle);
+            }
+            ScientificField scientificField;
+            if(memberDTO.getScientificField().getId()!=null){
+                Optional<ScientificField> existingScientificField = scientificFieldRepository.findById(memberDTO.getScientificField().getId());
+                if(existingScientificField.isPresent()){
+                    member.setScientificField(existingScientificField.get());
+                }
+            }
+            else{
+                scientificField = scientificFieldRepository.findByName(memberDTO.getScientificField().getName())
+                        .orElseGet(() -> scientificFieldRepository.save(scientificFieldConverter.toEntity(memberDTO.getScientificField())));
+                member.setScientificField(scientificField);
+            }
 
             if (member.getRole() == null) {
                 setDefaultMemberAttributes(member);
@@ -101,6 +135,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
         throw new EntityNotFoundException("Department doesn't exist!");
+
     }
 
     private void setDefaultMemberAttributes(Member member) {
@@ -200,12 +235,32 @@ public class MemberServiceImpl implements MemberService {
             if (patchRequest.getEducationTitle() != null && !patchRequest.getEducationTitle().equals(existingMember.getEducationTitle())) {
                 handleEducationTitle(existingMember, patchRequest.getEducationTitle());
             }
+            if (patchRequest.getScientificField() != null && !patchRequest.getScientificField().equals(existingMember.getScientificField())) {
+                handleScientificFieldUpdate(existingMember, patchRequest.getScientificField());
+            }
             existingMember = memberRepository.save(existingMember);
 
             return memberConverter.toDto(existingMember);
         }
 
         return null;
+    }
+
+    private void handleScientificFieldUpdate(Member existingMember, ScientificFieldDto scientificField) {
+        Optional<ScientificField> existingScientificField;
+        if(scientificField.getId()!=null){
+            existingScientificField = scientificFieldRepository.findById(scientificField.getId());
+        }
+        else{
+            existingScientificField= scientificFieldRepository.findByName(scientificField.getName());
+        }
+        if(existingScientificField.isPresent()){
+            existingMember.setScientificField(existingScientificField.get());
+        }
+        else{
+            ScientificField newScientificField= scientificFieldRepository.save(scientificFieldConverter.toEntity(scientificField));
+            existingMember.setScientificField(newScientificField);
+        }
     }
 
     @Override
@@ -218,9 +273,44 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    private void handleEducationTitle(Member existingMember, EducationTitleDto educationTitle) {
+    @Override
+    public List<SecretaryHistoryDto> getAllHistorySecretary(Long id) {
+        Optional<Member> existingMember = memberRepository.findById(id);
+        if(!existingMember.isPresent()){
+            throw new EntityNotFoundException("There is no member with that id!");
+        }
+        else{
+            return secretaryHistoryRepository.findByMemberId(id).
+                    stream().
+                    map(entity -> secretaryHistoryConverter.toDto(entity))
+                    .collect(Collectors.toList());
+        }
 
-        Optional<EducationTitle> existingEducationTitle= educationTitleRepository.findByName(educationTitle.getName());
+    }
+
+    @Override
+    public List<HeadHistoryDto> getAllHistoryHead(Long id) {
+        Optional<Member> existingMember = memberRepository.findById(id);
+        if(!existingMember.isPresent()){
+            throw new EntityNotFoundException("There is no member with that id!");
+        }
+        else{
+            return headHistoryRepository.findByMemberId(id).
+                    stream().
+                    map(entity -> headHistoryConverter.toDto(entity))
+                    .collect(Collectors.toList());
+        }
+
+    }
+
+    private void handleEducationTitle(Member existingMember, EducationTitleDto educationTitle) {
+        Optional<EducationTitle> existingEducationTitle;
+        if(educationTitle.getId()!=null){
+            existingEducationTitle = educationTitleRepository.findById(educationTitle.getId());
+        }
+        else{
+            existingEducationTitle= educationTitleRepository.findByName(educationTitle.getName());
+        }
         if(existingEducationTitle.isPresent()){
             existingMember.setEducationTitle(existingEducationTitle.get());
         }
@@ -248,12 +338,18 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private void handleAcademicTitleUpdate(Member existingMember, AcademicTitleDto academicTitle) {
+
         Optional<AcademicTitleHistory> academicTitleHistory= academicTitleHistoryRepository.findCurrentAcademicTitleByMemberId(existingMember.getId());
         if(academicTitleHistory.isPresent()){
             academicTitleHistory.get().setEndDate(LocalDate.now());
             academicTitleHistoryRepository.save(academicTitleHistory.get());
-
-            Optional<AcademicTitle> existingAcademicTitle= academicTitleRepository.findByName(academicTitle.getName());
+            Optional<AcademicTitle> existingAcademicTitle;
+            if(academicTitle.getId()!=null){
+                existingAcademicTitle = academicTitleRepository.findById(academicTitle.getId());
+            }
+            else{
+                existingAcademicTitle= academicTitleRepository.findByName(academicTitle.getName());
+            }
             if(existingAcademicTitle.isPresent()){
                 existingMember.setAcademicTitle(existingAcademicTitle.get());
             }

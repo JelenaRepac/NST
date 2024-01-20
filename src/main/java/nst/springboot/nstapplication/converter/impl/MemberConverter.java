@@ -6,6 +6,9 @@ import nst.springboot.nstapplication.dto.MemberDto;
 import nst.springboot.nstapplication.dto.MemberHeadSecretaryDto;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class MemberConverter implements DtoEntityConverter<MemberDto, Member> {
 
@@ -51,5 +54,13 @@ public class MemberConverter implements DtoEntityConverter<MemberDto, Member> {
                 department(departmentConverter.toEntity(dto.getDepartment())).
                 build();
 
+    }
+
+    public List<MemberDto> toDtoList(List<Member> memberList) {
+        List<MemberDto> memberDtoList= new ArrayList<>();
+        for(Member member: memberList){
+            memberDtoList.add(toDto(member));
+        }
+        return  memberDtoList;
     }
 }

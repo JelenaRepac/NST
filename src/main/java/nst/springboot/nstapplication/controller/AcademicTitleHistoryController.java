@@ -3,6 +3,7 @@ import jakarta.validation.Valid;
 import nst.springboot.nstapplication.domain.AcademicTitleHistory;
 import nst.springboot.nstapplication.dto.AcademicTitleDto;
 import nst.springboot.nstapplication.dto.AcademicTitleHistoryDto;
+import nst.springboot.nstapplication.dto.DepartmentDto;
 import nst.springboot.nstapplication.service.AcademicTitleHistoryService;
 import nst.springboot.nstapplication.service.AcademicTitleService;
 import org.springframework.http.HttpStatus;
@@ -43,5 +44,10 @@ public class AcademicTitleHistoryController {
     @GetMapping("/member/{id}")
     public List<AcademicTitleHistoryDto> findByMemberId(@PathVariable("id") Long id) {
         return academicTitleService.findByMemberId(id);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AcademicTitleHistoryDto> update(@PathVariable(name = "id") Long id, @Valid @RequestBody AcademicTitleHistoryDto academicTitleHistoryDto) throws Exception {
+        return new ResponseEntity<>(academicTitleService.update(id, academicTitleHistoryDto), HttpStatus.OK);
     }
 }

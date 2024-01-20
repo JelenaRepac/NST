@@ -1,10 +1,9 @@
 package nst.springboot.nstapplication.controller;
 
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
-import nst.springboot.nstapplication.dto.AcademicTitleDto;
 import nst.springboot.nstapplication.dto.RoleDto;
-import nst.springboot.nstapplication.service.AcademicTitleService;
 import nst.springboot.nstapplication.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/role")
+@Hidden
 public class RoleController {
 
     //Controller for roles

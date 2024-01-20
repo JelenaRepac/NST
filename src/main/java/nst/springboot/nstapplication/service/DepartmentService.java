@@ -5,7 +5,9 @@
 package nst.springboot.nstapplication.service;
 
 import nst.springboot.nstapplication.dto.DepartmentDto;
+import nst.springboot.nstapplication.dto.HeadHistoryDto;
 import nst.springboot.nstapplication.dto.MemberDto;
+import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
 
 import java.util.List;
 
@@ -19,8 +21,10 @@ public interface DepartmentService {
     void delete(Long id) ;
     DepartmentDto update(Long id,DepartmentDto department);
     DepartmentDto findById(Long id);
-
     MemberDto getActiveSecretaryForDepartment(Long id);
-
     MemberDto getActiveHeadForDepartment(Long id);
+    List<SecretaryHistoryDto> getSecretaryHistoryForDepartment(Long id);
+    List<HeadHistoryDto> getHeadHistoryForDepartment(Long id);
+
+    List<MemberDto> getAllMembersByDepartmentId(Long id);
 }

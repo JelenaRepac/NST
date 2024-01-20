@@ -5,6 +5,10 @@ import nst.springboot.nstapplication.domain.SecretaryHistory;
 import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 @Component
 public class SecretaryHistoryConverter implements DtoEntityConverter<SecretaryHistoryDto, SecretaryHistory> {
 
@@ -30,12 +34,28 @@ public class SecretaryHistoryConverter implements DtoEntityConverter<SecretaryHi
 
     @Override
     public SecretaryHistory toEntity(SecretaryHistoryDto secretaryHistoryDto) {
-        return SecretaryHistory.builder().
-                id(secretaryHistoryDto.getId()).
-                startDate(secretaryHistoryDto.getStartDate()).
-                endDate(secretaryHistoryDto.getEndDate()).
-                member(memberConverter.toEntity(secretaryHistoryDto.getMember())).
-                department(departmentConverter.toEntity(secretaryHistoryDto.getDepartment())).
-                build();
+        return SecretaryHistory.builder()
+                .id(Optional.ofNullable(secretaryHistoryDto.getId()).orElse(null))
+                .startDate(secretaryHistoryDto.getStartDate())
+                .endDate(secretaryHistoryDto.getEndDate())
+                .member(memberConverter.toEntity(secretaryHistoryDto.getMember()))
+                .department(departmentConverter.toEntity(secretaryHistoryDto.getDepartment()))
+                .build();
+    }
+
+    public List<SecretaryHistory> toEntityList (List<SecretaryHistoryDto> secretaryHistoryDtoList){
+        List<SecretaryHistory> secretaryHistoryList= new ArrayList<>();
+        for(SecretaryHistoryDto secretaryHistoryDto : secretaryHistoryDtoList){
+            secretaryHistoryList.add(toEntity(secretaryHistoryDto));
+        }
+        return secretaryHistoryList;
+    }
+
+    public List<SecretaryHistoryDto> toDtoList (List<SecretaryHistory> secretaryHistoryList){
+        List<SecretaryHistoryDto> secretaryHistoryDtoList= new ArrayList<>();
+        for(SecretaryHistory secretaryHistory : secretaryHistoryList){
+            secretaryHistoryDtoList.add(toDto(secretaryHistory));
+        }
+        return secretaryHistoryDtoList;
     }
 }

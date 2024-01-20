@@ -18,6 +18,10 @@ public interface AcademicTitleHistoryRepository extends JpaRepository<AcademicTi
 
     @Query("SELECT at FROM AcademicTitleHistory at " +
             "WHERE at.member.id = :memberId " +
+            "AND at.endDate IS NOT NULL")
+    List<AcademicTitleHistory> findAllByMemberIdAndEndDateNotNull(@Param("memberId") Long memberId);
+    @Query("SELECT at FROM AcademicTitleHistory at " +
+            "WHERE at.member.id = :memberId " +
             "AND at.endDate IS NULL")
     Optional<AcademicTitleHistory> findCurrentAcademicTitleByMemberId(@Param("memberId") Long memberId);
 

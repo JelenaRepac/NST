@@ -6,6 +6,8 @@ import nst.springboot.nstapplication.domain.AcademicTitleHistory;
 import nst.springboot.nstapplication.dto.AcademicTitleHistoryDto;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class AcademicTitleHistoryConverter implements DtoEntityConverter<AcademicTitleHistoryDto, AcademicTitleHistory> {
 
@@ -34,7 +36,7 @@ public class AcademicTitleHistoryConverter implements DtoEntityConverter<Academi
     @Override
     public AcademicTitleHistory toEntity(AcademicTitleHistoryDto academicTitleHistoryDto) {
         return AcademicTitleHistory.builder().
-                id(academicTitleHistoryDto.getId()).
+                id(Optional.ofNullable(academicTitleHistoryDto.getId()).orElse(null)).
                 startDate(academicTitleHistoryDto.getStartDate()).
                 endDate(academicTitleHistoryDto.getEndDate()).
                 member(memberConverter.toEntity(academicTitleHistoryDto.getMember())).

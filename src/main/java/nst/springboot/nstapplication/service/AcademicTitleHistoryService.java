@@ -12,4 +12,6 @@ public interface AcademicTitleHistoryService {
     List<AcademicTitleHistoryDto> getAll();
     AcademicTitleHistoryDto findById(Long id);
     List<AcademicTitleHistoryDto> findByMemberId(Long id);
+
+    AcademicTitleHistoryDto update(Long id, AcademicTitleHistoryDto academicTitleHistoryDto);
 }

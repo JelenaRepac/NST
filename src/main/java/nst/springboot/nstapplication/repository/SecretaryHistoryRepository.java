@@ -18,11 +18,15 @@ public interface SecretaryHistoryRepository extends JpaRepository<SecretaryHisto
             "AND sh.endDate IS NULL")
     Optional<SecretaryHistory> findCurrentByMemberId(@Param("memberId") Long memberId);
 
-
     @Query("SELECT sh.member FROM SecretaryHistory sh " +
             "WHERE sh.department.id = :departmentId " +
             "AND sh.endDate IS NULL")
     Optional<Member> findCurrentSecretaryByDepartmentId(@Param("departmentId") Long departmentId);
-
     List<SecretaryHistory> findByDepartmentId(Long id);
+    List<SecretaryHistory> findByMemberId(Long id);
+    @Query("SELECT h FROM SecretaryHistory h " +
+            "WHERE h.department.id = :departmentId " +
+            "ORDER BY COALESCE(h.endDate, CURRENT_DATE) " +
+            "DESC, h.startDate DESC")
+    List<SecretaryHistory> findByDepartmentIdOrderByDate(@Param("departmentId") Long id);
 }

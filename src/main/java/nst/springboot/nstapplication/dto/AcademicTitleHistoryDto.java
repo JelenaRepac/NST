@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Builder
 public class AcademicTitleHistoryDto implements Serializable {
     private Long id;
-    @JsonIgnore
+
     private MemberDto member;
 
     private LocalDate startDate;

@@ -2,8 +2,10 @@ package nst.springboot.nstapplication.controller;
 
 import jakarta.validation.Valid;
 import nst.springboot.nstapplication.domain.Member;
+import nst.springboot.nstapplication.dto.HeadHistoryDto;
 import nst.springboot.nstapplication.dto.MemberDto;
 import nst.springboot.nstapplication.dto.MemberPatchRequest;
+import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
 import nst.springboot.nstapplication.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,6 @@ public class MemberController {
         return new ResponseEntity<>(member, HttpStatus.CREATED);
     }
 
-
     @PatchMapping("/{id}")
     public ResponseEntity<MemberDto> updateMember(@PathVariable Long id, @RequestBody MemberPatchRequest patchRequest) {
         MemberDto updatedMember = memberService.patchUpdateMember(id, patchRequest);
@@ -47,15 +48,23 @@ public class MemberController {
         MemberDto member = memberService.findById(id);
         return new ResponseEntity<>(member, HttpStatus.OK);
     }
-    @GetMapping("/department/{id}")
-    public ResponseEntity<List<MemberDto>> findByDepartmentId(@PathVariable("id") Long id) {
-        return new ResponseEntity<>(memberService.getAllByDepartmentId(id), HttpStatus.OK) ;
-    }
+//    @GetMapping("/department/{id}")
+//    public ResponseEntity<List<MemberDto>> findByDepartmentId(@PathVariable("id") Long id) {
+//        return new ResponseEntity<>(memberService.getAllByDepartmentId(id), HttpStatus.OK) ;
+//    }
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) throws Exception {
         memberService.delete(id);
         return new ResponseEntity<>("Member removed!", HttpStatus.OK);
+    }
+    @GetMapping("/{id}/secretary-history")
+    public ResponseEntity<List<SecretaryHistoryDto>> getAllHistorySecretary(@PathVariable  Long id){
+       return new ResponseEntity<>( memberService.getAllHistorySecretary(id), HttpStatus.OK);
+    }
 
+    @GetMapping("/{id}/head-history")
+    public ResponseEntity<List<HeadHistoryDto>> getAllHistoryHead(@PathVariable  Long id){
+        return new ResponseEntity<>( memberService.getAllHistoryHead(id), HttpStatus.OK);
     }
 
 }

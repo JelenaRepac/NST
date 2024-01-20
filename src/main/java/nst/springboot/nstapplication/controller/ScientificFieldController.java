@@ -1,5 +1,6 @@
 package nst.springboot.nstapplication.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import nst.springboot.nstapplication.dto.EducationTitleDto;
 import nst.springboot.nstapplication.dto.ScientificFieldDto;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/scientificField")
+@Hidden
 public class ScientificFieldController {
     //Controller for scientificField
     //ENDPOINTS -> saving, getAll, getById, partialUpdate

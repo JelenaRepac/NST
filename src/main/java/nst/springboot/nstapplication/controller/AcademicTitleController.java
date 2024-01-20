@@ -1,4 +1,5 @@
 package nst.springboot.nstapplication.controller;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import nst.springboot.nstapplication.dto.AcademicTitleDto;
 import nst.springboot.nstapplication.service.AcademicTitleService;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/academicTitle")
+@Hidden
 public class AcademicTitleController {
     //Controller for academic title
     //ENDPOINTS -> saving, getAll, getById, partialUpdate

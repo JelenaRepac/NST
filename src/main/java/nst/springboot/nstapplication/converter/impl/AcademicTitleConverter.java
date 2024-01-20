@@ -5,6 +5,8 @@ import nst.springboot.nstapplication.domain.AcademicTitle;
 import nst.springboot.nstapplication.dto.AcademicTitleDto;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class AcademicTitleConverter implements DtoEntityConverter<AcademicTitleDto, AcademicTitle> {
     @Override
@@ -15,6 +17,7 @@ public class AcademicTitleConverter implements DtoEntityConverter<AcademicTitleD
                 build();
     }
 
+
     @Override
     public AcademicTitle toEntity(AcademicTitleDto dto) {
         return AcademicTitle.builder().
@@ -22,6 +25,7 @@ public class AcademicTitleConverter implements DtoEntityConverter<AcademicTitleD
                 name(dto.getName()).
                 build();
     }
+
 
 }
 

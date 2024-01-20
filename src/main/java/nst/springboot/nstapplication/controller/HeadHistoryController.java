@@ -34,10 +34,11 @@ public class HeadHistoryController {
     public HeadHistoryDto findById(@PathVariable("id") Long id){
         return service.findById(id);
     }
-    @GetMapping("/department/{id}")
-    public HeadHistoryDto findByDepartmentId(@PathVariable("id") Long id)  {
-        return service.getByDepartmentId(id);
-    }
+
+//    @GetMapping("/department/{id}")
+//    public HeadHistoryDto findByDepartmentId(@PathVariable("id") Long id)  {
+//        return service.getByDepartmentId(id);
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
@@ -46,9 +47,9 @@ public class HeadHistoryController {
 
     }
 
-    @GetMapping("/department/{id}/history")
-    public List<HeadHistoryDto> getHistoryForDepartmentId(@PathVariable("id") Long id)  {
-        return service.getHistoryForDepartmentId(id);
-    }
+//    @GetMapping("/department/{id}/history")
+//    public List<HeadHistoryDto> getHistoryForDepartmentId(@PathVariable("id") Long id)  {
+//        return service.getHistoryForDepartmentId(id);
+//    }
 
 }

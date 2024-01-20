@@ -26,7 +26,7 @@ public class AcademicTitleHistory {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "member_id")
     Member member;
 

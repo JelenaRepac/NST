@@ -67,7 +67,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
         log.error(e.getMessage(),e.getStackTrace());
         return MyErrorDetails.builder().
                 errorCode(ConstantsCustom.NOT_FOUND_CODE).
-                errorMessage(e.getMessage()).
+                errorMessage(e.getMessage()+e.getStackTrace()+e.getLocalizedMessage()).
                 build();
 
     }

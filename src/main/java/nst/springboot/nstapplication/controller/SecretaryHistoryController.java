@@ -32,10 +32,12 @@ public class SecretaryHistoryController {
     public SecretaryHistoryDto findById(@PathVariable("id") Long id){
         return service.findById(id);
     }
-    @GetMapping("/department/{id}")
-    public SecretaryHistoryDto findByDepartmentId(@PathVariable("id") Long id)  {
-        return service.getByDepartmentId(id);
-    }
+
+
+//    @GetMapping("/department/{id}")
+//    public SecretaryHistoryDto findByDepartmentId(@PathVariable("id") Long id)  {
+//        return service.getByDepartmentId(id);
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
@@ -44,8 +46,8 @@ public class SecretaryHistoryController {
 
     }
 
-    @GetMapping("/department/{id}/history")
-    public List<SecretaryHistoryDto> getHistoryForDepartmentId(@PathVariable("id") Long id)  {
-        return service.getHistoryForDepartmentId(id);
-    }
+//    @GetMapping("/department/{id}/history")
+//    public List<SecretaryHistoryDto> getHistoryForDepartmentId(@PathVariable("id") Long id)  {
+//        return service.getHistoryForDepartmentId(id);
+//    }
 }

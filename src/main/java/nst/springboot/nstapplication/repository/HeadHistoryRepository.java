@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 @Repository
@@ -26,4 +27,11 @@ public interface HeadHistoryRepository extends JpaRepository<HeadHistory, Long> 
     List<HeadHistory> findByDepartmentId(Long id);
 
     Optional<HeadHistory> findByDepartmentIdAndEndDateNull(Long id);
+
+    List<HeadHistory> findByMemberId(Long id);
+    @Query("SELECT h FROM HeadHistory h " +
+            "WHERE h.department.id = :departmentId " +
+            "ORDER BY COALESCE(h.endDate, CURRENT_DATE) " +
+            "DESC, h.startDate DESC")
+    List<HeadHistory> findByDepartmentIdOrderByDate(@Param("departmentId") Long id);
 }

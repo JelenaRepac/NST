@@ -8,15 +8,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import nst.springboot.nstapplication.converter.impl.HeadHistoryConverter;
 import nst.springboot.nstapplication.converter.impl.MemberConverter;
+import nst.springboot.nstapplication.converter.impl.SecretaryHistoryConverter;
 import nst.springboot.nstapplication.domain.Department;
+import nst.springboot.nstapplication.domain.HeadHistory;
 import nst.springboot.nstapplication.domain.Member;
+import nst.springboot.nstapplication.domain.SecretaryHistory;
 import nst.springboot.nstapplication.dto.DepartmentDto;
+import nst.springboot.nstapplication.dto.HeadHistoryDto;
 import nst.springboot.nstapplication.dto.MemberDto;
+import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
 import nst.springboot.nstapplication.exception.EmptyResponseException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.repository.DepartmentRepository;
 import nst.springboot.nstapplication.repository.HeadHistoryRepository;
+import nst.springboot.nstapplication.repository.MemberRepository;
 import nst.springboot.nstapplication.repository.SecretaryHistoryRepository;
 import nst.springboot.nstapplication.service.DepartmentService;
 import nst.springboot.nstapplication.converter.impl.DepartmentConverter;
@@ -32,22 +39,26 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     private DepartmentConverter departmentConverter;
     private DepartmentRepository departmentRepository;
-
     private SecretaryHistoryRepository secretaryHistoryRepository;
+    private SecretaryHistoryConverter secretaryHistoryConverter;
     private HeadHistoryRepository headHistoryRepository;
+    private HeadHistoryConverter headHistoryConverter;
     private MemberConverter memberConverter;
-
+    private MemberRepository memberRepository;
     public DepartmentServiceImpl(
             DepartmentRepository departmentRepository,
             DepartmentConverter departmentConverter,
             SecretaryHistoryRepository secretaryHistoryRepository,
-            HeadHistoryRepository headHistoryRepository,
-            MemberConverter memberConverter) {
+            SecretaryHistoryConverter secretaryHistoryConverter, HeadHistoryRepository headHistoryRepository,
+            HeadHistoryConverter headHistoryConverter, MemberConverter memberConverter, MemberRepository memberRepository) {
         this.departmentRepository = departmentRepository;
         this.departmentConverter = departmentConverter;
         this.secretaryHistoryRepository=secretaryHistoryRepository;
+        this.secretaryHistoryConverter = secretaryHistoryConverter;
         this.headHistoryRepository=headHistoryRepository;
+        this.headHistoryConverter = headHistoryConverter;
         this.memberConverter= memberConverter;
+        this.memberRepository = memberRepository;
     }
 
     @Override
@@ -130,6 +141,45 @@ public class DepartmentServiceImpl implements DepartmentService {
         }else{
             throw new EntityNotFoundException("There is no active head for "+department.get().getName());
         }
+    }
+
+    @Override
+    public List<SecretaryHistoryDto> getSecretaryHistoryForDepartment(Long id) {
+        Optional<Department> department= departmentRepository.findById(id);
+        if(!department.isPresent()){
+            throw new EntityNotFoundException("There is no department with id: "+id);
+        }
+        List<SecretaryHistory> secretaryHistoryList = secretaryHistoryRepository.findByDepartmentIdOrderByDate(id);
+        if(secretaryHistoryList.isEmpty()){
+            throw new EmptyResponseException("There wasn't any secretary for department "+department.get().getName());
+        }
+        return secretaryHistoryConverter.toDtoList(secretaryHistoryList);
+    }
+
+    @Override
+    public List<HeadHistoryDto> getHeadHistoryForDepartment(Long id) {
+        Optional<Department> department= departmentRepository.findById(id);
+        if(!department.isPresent()){
+            throw new EntityNotFoundException("There is no department with id: "+id);
+        }
+        List<HeadHistory> headHistoryList = headHistoryRepository.findByDepartmentIdOrderByDate(id);
+        if(headHistoryList.isEmpty()){
+            throw new EmptyResponseException("There wasn't any head for department "+department.get().getName());
+        }
+        return headHistoryConverter.toDtoList(headHistoryList);
+    }
+
+    @Override
+    public List<MemberDto> getAllMembersByDepartmentId(Long id) {
+       Optional<Department> department= departmentRepository.findById(id);
+       if(!department.isPresent()){
+           throw new EntityNotFoundException("There is no department with that id!");
+       }
+       List<Member> memberList= memberRepository.findAllByDepartmentId(id);
+       if(memberList.isEmpty()){
+           throw new EntityNotFoundException("There are no members for department "+ department.get().getName());
+       }
+       return memberConverter.toDtoList(memberList);
     }
 
     @Override

@@ -1,16 +1,23 @@
 package nst.springboot.nstapplication.service.impl;
 
+import nst.springboot.nstapplication.converter.impl.DepartmentConverter;
 import nst.springboot.nstapplication.converter.impl.HeadHistoryConverter;
+import nst.springboot.nstapplication.converter.impl.MemberConverter;
+import nst.springboot.nstapplication.domain.Department;
 import nst.springboot.nstapplication.domain.HeadHistory;
+import nst.springboot.nstapplication.domain.Member;
 import nst.springboot.nstapplication.domain.SecretaryHistory;
 import nst.springboot.nstapplication.dto.HeadHistoryDto;
-import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
 import nst.springboot.nstapplication.exception.EmptyResponseException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
+import nst.springboot.nstapplication.exception.IllegalArgumentException;
+import nst.springboot.nstapplication.repository.DepartmentRepository;
 import nst.springboot.nstapplication.repository.HeadHistoryRepository;
+import nst.springboot.nstapplication.repository.MemberRepository;
 import nst.springboot.nstapplication.service.HeadHistoryService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,19 +26,111 @@ import java.util.stream.Collectors;
 @Service
 public class HeadHistoryServiceImpl implements HeadHistoryService{
     private HeadHistoryRepository repository;
-
     private HeadHistoryConverter headHistoryConverter;
+    private MemberRepository memberRepository;
+    private MemberConverter memberConverter;
+    private DepartmentRepository departmentRepository;
+    private DepartmentConverter departmentConverter;
 
-    public HeadHistoryServiceImpl(HeadHistoryRepository repository, HeadHistoryConverter secretaryHistoryConverter) {
+    public HeadHistoryServiceImpl(HeadHistoryRepository repository, HeadHistoryConverter secretaryHistoryConverter, MemberRepository memberRepository, MemberConverter memberConverter, DepartmentRepository departmentRepository, DepartmentConverter departmentConverter) {
         this.repository = repository;
         this.headHistoryConverter = secretaryHistoryConverter;
+        this.memberRepository = memberRepository;
+        this.memberConverter = memberConverter;
+        this.departmentRepository = departmentRepository;
+        this.departmentConverter = departmentConverter;
     }
 
     @Override
     public HeadHistoryDto save(HeadHistoryDto headHistoryDto){
-        HeadHistory history = headHistoryConverter.toEntity(headHistoryDto);
-        history = repository.save(history);
-        return headHistoryConverter.toDto(history);
+        if(headHistoryDto.getEndDate()!=null && headHistoryDto.getStartDate()!= null){
+            if(headHistoryDto.getEndDate().isBefore(headHistoryDto.getStartDate())){
+                throw new IllegalArgumentException("End date can't be before start date!");
+            }
+        }
+        Optional<Member> existingMember;
+        if(headHistoryDto.getHead().getId()!=null){
+            existingMember = memberRepository.findById(headHistoryDto.getHead().getId());
+            if(existingMember.isPresent()){
+                headHistoryDto.setHead(memberConverter.toDto(existingMember.get()));
+            }
+            else{
+                throw new EntityNotFoundException("There is no member with that id!");
+            }
+        }
+        else{
+            existingMember = memberRepository.findByFirstnameAndLastname(headHistoryDto.getHead().getFirstname(), headHistoryDto.getHead().getLastname());
+            if(existingMember.isPresent()){
+                headHistoryDto.setHead(memberConverter.toDto(existingMember.get()));
+            }
+            else{
+                memberRepository.save(memberConverter.toEntity(headHistoryDto.getHead()));
+                Optional<Member> member = memberRepository.findByFirstnameAndLastname(headHistoryDto.getHead().getFirstname(), headHistoryDto.getHead().getLastname());
+                if(member.isPresent()){
+                    headHistoryDto.setHead(memberConverter.toDto(member.get()));
+                }
+            }
+        }
+        Optional<Department> existingDepartment;
+
+        if(headHistoryDto.getDepartment().getId()!=null) {
+            existingDepartment = departmentRepository.findById(headHistoryDto.getDepartment().getId());
+            if(existingDepartment.isPresent()){
+                if(headHistoryDto.getHead().getDepartment().getId() != headHistoryDto.getDepartment().getId()){
+                    throw new IllegalArgumentException("Member is not in that department! He is in  " + headHistoryDto.getHead().getDepartment().getName() +".");
+                }
+                headHistoryDto.setDepartment(departmentConverter.toDto(existingDepartment.get()));
+            }
+            else{
+                throw new EntityNotFoundException("There is no department with that id!");
+            }
+        }
+        else{
+            existingDepartment = departmentRepository.findByName(headHistoryDto.getDepartment().getName());
+            if(existingDepartment.isPresent()){
+                if(headHistoryDto.getHead().getDepartment().getId() != existingDepartment.get().getId()){
+                    throw new IllegalArgumentException("Member is not in that department! He is in  " + headHistoryDto.getHead().getDepartment().getName() +".");
+                }
+                headHistoryDto.setDepartment(departmentConverter.toDto(existingDepartment.get()));
+            }
+            else{
+                departmentRepository.save(departmentConverter.toEntity(headHistoryDto.getDepartment()));
+                Optional<Department> department= departmentRepository.findByName(headHistoryDto.getDepartment().getName());
+                if(department.isPresent()){
+                    headHistoryDto.setDepartment(departmentConverter.toDto(department.get()));
+                }
+
+            }
+        }
+
+        List<HeadHistory> existingHistoryList = repository.findByDepartmentId(headHistoryDto.getDepartment().getId());
+
+        for (HeadHistory existingHistory : existingHistoryList) {
+            Optional<Member> member = memberRepository.findById(existingHistory.getMember().getId());
+            if(headHistoryDto.getEndDate() ==null && existingHistory.getEndDate() ==null) {
+                throw new IllegalArgumentException("There is already head member " + existingHistory.getMember().getFirstname()
+                        + " " + existingHistory.getMember().getLastname() + " for department " + existingHistory.getDepartment().getName());
+
+            }
+
+            if(existingHistory.getStartDate()!= null && existingHistory.getEndDate() !=null &&  headHistoryDto.getStartDate()!=null && headHistoryDto.getEndDate()!=null) {
+                if (isDateOverlap(existingHistory.getStartDate(), existingHistory.getEndDate(),
+                        headHistoryDto.getStartDate(), headHistoryDto.getEndDate())) {
+                    throw new IllegalArgumentException("The member " + member.get().getFirstname() + " " +
+                            member.get().getLastname() +
+                            " already was at the HEAD position from " + existingHistory.getStartDate() + " to " + existingHistory.getEndDate() +
+                            " in department " + headHistoryDto.getDepartment().getName());
+                }
+            }
+        }
+
+        return headHistoryConverter.toDto(repository.save(headHistoryConverter.toEntity(headHistoryDto)));
+    }
+    private boolean isDateOverlap(LocalDate startDate1, LocalDate endDate1, LocalDate startDate2, LocalDate endDate2) {
+        if(startDate1!= null && endDate1 !=null && startDate2!=null && endDate2!=null) {
+            return startDate1.isBefore(endDate2) && endDate1.isAfter(startDate2);
+        }
+        return false;
     }
 
     @Override
