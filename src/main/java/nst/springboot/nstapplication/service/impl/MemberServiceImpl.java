@@ -10,9 +10,7 @@ import nst.springboot.nstapplication.exception.EntityAlreadyExistsException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.exception.IllegalArgumentException;
 import nst.springboot.nstapplication.repository.*;
-import nst.springboot.nstapplication.service.AcademicTitleService;
 import nst.springboot.nstapplication.service.MemberService;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -41,8 +39,9 @@ public class MemberServiceImpl implements MemberService {
     private RoleRepository roleRepository;
     private RoleConverter roleConverter;
     private DepartmentConverter departmentConverter;
+    private AcademicTitleHistoryConverter academicTitleHistoryConverter;
 
-    public MemberServiceImpl(MemberConverter memberConverter, AcademicTitleConverter academicTitleConverter, ScientificFieldConverter scientificFieldConverter, EducationTitleConverter educationTitleConverter, MemberRepository memberRepository, DepartmentRepository departmentRepository, AcademicTitleRepository academicTitleRepository, EducationTitleRepository educationTitleRepository, ScientificFieldRepository scientificFieldRepository, AcademicTitleHistoryRepository academicTitleHistoryRepository, HeadHistoryRepository headHistoryRepository, SecretaryHistoryRepository secretaryHistoryRepository, RoleRepository roleRepository, RoleConverter roleConverter, DepartmentConverter departmentConverter, SecretaryHistoryConverter secretarHistoryConventer, HeadHistoryConverter headHistoryConverter) {
+    public MemberServiceImpl(MemberConverter memberConverter, AcademicTitleConverter academicTitleConverter, ScientificFieldConverter scientificFieldConverter, EducationTitleConverter educationTitleConverter, MemberRepository memberRepository, DepartmentRepository departmentRepository, AcademicTitleRepository academicTitleRepository, EducationTitleRepository educationTitleRepository, ScientificFieldRepository scientificFieldRepository, AcademicTitleHistoryRepository academicTitleHistoryRepository, HeadHistoryRepository headHistoryRepository, SecretaryHistoryRepository secretaryHistoryRepository, RoleRepository roleRepository, RoleConverter roleConverter, DepartmentConverter departmentConverter, SecretaryHistoryConverter secretarHistoryConventer, HeadHistoryConverter headHistoryConverter, AcademicTitleHistoryConverter academicTitleHistoryConverter) {
         this.memberConverter = memberConverter;
         this.academicTitleConverter = academicTitleConverter;
         this.scientificFieldConverter = scientificFieldConverter;
@@ -60,6 +59,7 @@ public class MemberServiceImpl implements MemberService {
         this.departmentConverter = departmentConverter;
         this.secretaryHistoryConverter = secretarHistoryConventer;
         this.headHistoryConverter=headHistoryConverter;
+        this.academicTitleHistoryConverter = academicTitleHistoryConverter;
     }
 
     @Override
@@ -309,6 +309,20 @@ public class MemberServiceImpl implements MemberService {
                     .collect(Collectors.toList());
         }
 
+    }
+
+    @Override
+    public List<AcademicTitleHistoryDto> getAllAcademicTitleHistory(Long id) {
+        Optional<Member> existingMember = memberRepository.findById(id);
+        if(!existingMember.isPresent()){
+            throw new EntityNotFoundException("There is no member with that id!");
+        }
+        else{
+            return academicTitleHistoryRepository.findByMemberIdOrderByStartDate(id).
+                    stream().
+                    map(entity -> academicTitleHistoryConverter.toDto(entity))
+                    .collect(Collectors.toList());
+        }
     }
 
     private void handleEducationTitle(Member existingMember, EducationTitleDto educationTitle) {

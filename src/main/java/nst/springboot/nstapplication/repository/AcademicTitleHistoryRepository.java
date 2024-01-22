@@ -25,4 +25,5 @@ public interface AcademicTitleHistoryRepository extends JpaRepository<AcademicTi
             "AND at.endDate IS NULL")
     Optional<AcademicTitleHistory> findCurrentAcademicTitleByMemberId(@Param("memberId") Long memberId);
 
+    List<AcademicTitleHistory> findByMemberIdOrderByStartDate(Long id);
 }

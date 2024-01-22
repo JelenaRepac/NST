@@ -123,21 +123,18 @@ public class AcademicTitleHistoryServiceImpl implements AcademicTitleHistoryServ
                     academicTitleHistory.get().setEndDate(academicTitleDTO.getStartDate());
                     update(academicTitleHistory.get().getId(),academicTitleHistoryConverter.toDto(academicTitleHistory.get()));
                     academicTitleHistoryRepository.save(academicTitleHistory.get());
+                    existingMember.get().setAcademicTitle(academicTitleConverter.toEntity(academicTitleDTO.getAcademicTitle()));
+                    memberRepository.save(existingMember.get());
                 }
                 if(academicTitleDTO.getEndDate()==null && academicTitleHistory.get().getStartDate().isBefore(academicTitleDTO.getStartDate())){
                     academicTitleHistory.get().setEndDate(academicTitleDTO.getStartDate());
                     update(academicTitleHistory.get().getId(),academicTitleHistoryConverter.toDto(academicTitleHistory.get()));
                     academicTitleHistoryRepository.save(academicTitleHistory.get());
+                    existingMember.get().setAcademicTitle(academicTitleConverter.toEntity(academicTitleDTO.getAcademicTitle()));
+                    memberRepository.save(existingMember.get());
                 }
         }
-        if(academicTitleDTO.getEndDate()!=null) {
-            if (academicTitleDTO.getStartDate().isBefore(LocalDate.now())) {
-                existingMember.get().setAcademicTitle(academicTitleConverter.toEntity(academicTitleDTO.getAcademicTitle()));
-                memberRepository.save(existingMember.get());
-
-            }
-        }
-        if(academicTitleDTO.getEndDate()==null){
+        if(!academicTitleDTO.getStartDate().isBefore(LocalDate.now()) && !academicTitleDTO.getEndDate().isBefore(LocalDate.now())){
             existingMember.get().setAcademicTitle(academicTitleConverter.toEntity(academicTitleDTO.getAcademicTitle()));
             memberRepository.save(existingMember.get());
         }

@@ -41,10 +41,10 @@ public class AcademicTitleHistoryController {
         return academicTitleService.findById(id);
     }
 
-    @GetMapping("/member/{id}")
-    public List<AcademicTitleHistoryDto> findByMemberId(@PathVariable("id") Long id) {
-        return academicTitleService.findByMemberId(id);
-    }
+//    @GetMapping("/member/{id}")
+//    public List<AcademicTitleHistoryDto> findByMemberId(@PathVariable("id") Long id) {
+//        return academicTitleService.findByMemberId(id);
+//    }
 
     @PutMapping("/{id}")
     public ResponseEntity<AcademicTitleHistoryDto> update(@PathVariable(name = "id") Long id, @Valid @RequestBody AcademicTitleHistoryDto academicTitleHistoryDto) throws Exception {

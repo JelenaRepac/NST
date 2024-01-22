@@ -15,4 +15,6 @@ public interface MemberService {
     List<SecretaryHistoryDto> getAllHistorySecretary(Long id);
 
     List<HeadHistoryDto> getAllHistoryHead(Long id);
+
+    List<AcademicTitleHistoryDto> getAllAcademicTitleHistory(Long id);
 }

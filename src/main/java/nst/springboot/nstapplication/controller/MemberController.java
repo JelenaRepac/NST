@@ -2,10 +2,7 @@ package nst.springboot.nstapplication.controller;
 
 import jakarta.validation.Valid;
 import nst.springboot.nstapplication.domain.Member;
-import nst.springboot.nstapplication.dto.HeadHistoryDto;
-import nst.springboot.nstapplication.dto.MemberDto;
-import nst.springboot.nstapplication.dto.MemberPatchRequest;
-import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
+import nst.springboot.nstapplication.dto.*;
 import nst.springboot.nstapplication.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +62,11 @@ public class MemberController {
     @GetMapping("/{id}/head-history")
     public ResponseEntity<List<HeadHistoryDto>> getAllHistoryHead(@PathVariable  Long id){
         return new ResponseEntity<>( memberService.getAllHistoryHead(id), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/academic-title-history")
+    public ResponseEntity<List<AcademicTitleHistoryDto>> getAllAcademicTitleHistory(@PathVariable  Long id){
+        return new ResponseEntity<>( memberService.getAllAcademicTitleHistory(id), HttpStatus.OK);
     }
 
 }
