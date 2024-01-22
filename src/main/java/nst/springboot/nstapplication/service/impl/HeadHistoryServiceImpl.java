@@ -117,8 +117,12 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
         for (HeadHistory existingHistory : existingHistoryList) {
             Optional<Member> member = memberRepository.findById(existingHistory.getMember().getId());
             if(headHistoryDto.getEndDate() ==null && existingHistory.getEndDate() ==null) {
-                throw new IllegalArgumentException("There is already head member " + existingHistory.getMember().getFirstname()
-                        + " " + existingHistory.getMember().getLastname() + " for department " + existingHistory.getDepartment().getName());
+                if(headHistoryDto.getStartDate().isAfter(existingHistory.getStartDate())){
+                    existingHistory.setEndDate(headHistoryDto.getStartDate());
+                    repository.save(existingHistory);
+                }
+//                throw new IllegalArgumentException("There is already head member " + existingHistory.getMember().getFirstname()
+//                        + " " + existingHistory.getMember().getLastname() + " for department " + existingHistory.getDepartment().getName());
 
             }
 
@@ -133,7 +137,7 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
             }
         }
 
-        Optional<SecretaryHistory> activeSecretary = secretaryHistoryRepository.findCurrentByMemberId(headHistoryDto.getHead().getId());
+        Optional<SecretaryHistory> activeSecretary = secretaryHistoryRepository.findCurrentByMemberId(headHistoryDto.getHead().getId(), LocalDate.now());
         if(activeSecretary.isPresent()){
             throw new IllegalArgumentException("Member "+headHistoryDto.getHead().getFirstname()+" "+headHistoryDto.getHead().getLastname()+" " +
                     "can't be HEAD because member is at the SECRETARY position from "+activeSecretary.get().getStartDate()+ " for department "+

@@ -112,8 +112,10 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
         for (SecretaryHistory existingHistory : existingHistoryList) {
             Optional<Member> member = memberRepository.findById(existingHistory.getMember().getId());
             if (secretaryHistoryDTO.getEndDate() == null && existingHistory.getEndDate() == null) {
-                throw new IllegalArgumentException("There is already secretary member " + existingHistory.getMember().getFirstname()
-                        + " " + existingHistory.getMember().getLastname() + " for department " + existingHistory.getDepartment().getName());
+                if(secretaryHistoryDTO.getStartDate().isAfter(existingHistory.getStartDate())){
+                    existingHistory.setEndDate(secretaryHistoryDTO.getStartDate());
+                    repository.save(existingHistory);
+                }
 
             }
 

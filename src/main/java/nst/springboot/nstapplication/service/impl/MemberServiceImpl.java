@@ -390,16 +390,22 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private void handleRoleUpdate(Member existingMember, RoleDto role) {
+        Optional<SecretaryHistory> existingHistory=secretaryHistoryRepository.findCurrentByMemberId(existingMember.getId(), LocalDate.now());
+        Optional<HeadHistory> existingHistoryHead=headHistoryRepository.findCurrentByMemberId(existingMember.getId());
         switch (existingMember.getRole().getName()){
             case(ConstantsCustom.SECRETARY):
-                Optional<SecretaryHistory> existingHistory=secretaryHistoryRepository.findCurrentByMemberId(existingMember.getId());
+                if(existingHistoryHead.isPresent()){
+                    throw new IllegalArgumentException("Member "+existingMember.getFirstname()+" "+existingMember.getLastname()+" is active HEAD!");
+                }
                 if(existingHistory.isPresent()){
                     existingHistory.get().setEndDate(LocalDate.now());
                     secretaryHistoryRepository.save(existingHistory.get());
                 }
                 break;
             case(ConstantsCustom.HEAD):
-                Optional<HeadHistory> existingHistoryHead=headHistoryRepository.findCurrentByMemberId(existingMember.getId());
+                if(existingHistory.isPresent()){
+                    throw new IllegalArgumentException("Member "+existingMember.getFirstname()+" "+existingMember.getLastname()+" is active SECRETARY!");
+                }
                 if(existingHistoryHead.isPresent()){
                     existingHistoryHead.get().setEndDate(LocalDate.now());
                     headHistoryRepository.save(existingHistoryHead.get());

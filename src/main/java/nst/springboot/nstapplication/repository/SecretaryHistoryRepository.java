@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 @Repository
@@ -15,8 +16,8 @@ public interface SecretaryHistoryRepository extends JpaRepository<SecretaryHisto
     Optional<SecretaryHistory> findByDepartmentIdAndEndDateNull(Long id);
     @Query("SELECT sh FROM SecretaryHistory sh " +
             "WHERE sh.member.id = :memberId " +
-            "AND sh.endDate IS NULL")
-    Optional<SecretaryHistory> findCurrentByMemberId(@Param("memberId") Long memberId);
+            "AND sh.endDate IS NULL OR (sh.startDate < :localDate AND sh.endDate > :localDate)")
+    Optional<SecretaryHistory> findCurrentByMemberId(@Param("memberId") Long memberId, @Param("localDate") LocalDate localDate) ;
 
     @Query("SELECT sh.member FROM SecretaryHistory sh " +
             "WHERE sh.department.id = :departmentId " +
