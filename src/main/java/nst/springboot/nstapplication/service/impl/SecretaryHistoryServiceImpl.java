@@ -216,17 +216,16 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
         if(secretaryHistoryDto.getMember() == null){
             secretaryHistoryDto.setMember(memberConverter.toDto(existingSecretaryHistory.get().getMember()));
         }
-        Optional<Member> existingMember = memberRepository.findById(existingSecretaryHistory.get().getMember().getId());
+        Optional<Member> existingMember = memberRepository.findById(secretaryHistoryDto.getMember().getId());
         if(!existingMember.isPresent()){
             throw new IllegalArgumentException("There is no member with that id!");
         }
         secretaryHistoryDto.setMember(memberConverter.toDto(existingMember.get()));
         if(secretaryHistoryDto.getMember().getId()!=existingSecretaryHistory.get().getMember().getId()){
-            throw new IllegalArgumentException("You want to change history for member "+secretaryHistoryDto.getMember().getFirstname()+" "+
-                    secretaryHistoryDto.getMember().getLastname()+", but the specific history is for "+existingSecretaryHistory.get().getMember().getFirstname()+
-                    " "+ existingSecretaryHistory.get().getMember().getLastname());
-        }
+            throw new IllegalArgumentException("You want to change history for member "+secretaryHistoryDto.getMember().getFirstname()+" "+secretaryHistoryDto.getMember().getLastname()+
+                    ", but the specific history is for "+existingSecretaryHistory.get().getMember().getFirstname()+" "+existingSecretaryHistory.get().getMember().getLastname());
 
+        }
 
         if(secretaryHistoryDto.getDepartment() == null){
             secretaryHistoryDto.setDepartment(departmentConverter.toDto(existingSecretaryHistory.get().getDepartment()));

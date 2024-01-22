@@ -13,15 +13,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class AcademicTitleHistoryDto implements Serializable {
+
     private Long id;
-
-    private MemberDto member;
-
     private LocalDate startDate;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate endDate;
-
     private AcademicTitleDto academicTitle;
-
     private ScientificFieldDto scientificField;
+    private MemberDto member;
 }

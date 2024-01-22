@@ -215,15 +215,15 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
         if(headHistoryDto.getHead() == null){
             headHistoryDto.setHead(memberConverter.toDto(existingHeadHistory.get().getMember()));
         }
-        Optional<Member> existingMember = memberRepository.findById(existingHeadHistory.get().getMember().getId());
+        Optional<Member> existingMember = memberRepository.findById(headHistoryDto.getHead().getId());
         if(!existingMember.isPresent()){
             throw new IllegalArgumentException("There is no member with that id!");
         }
         headHistoryDto.setHead(memberConverter.toDto(existingMember.get()));
         if(headHistoryDto.getHead().getId()!=existingHeadHistory.get().getMember().getId()){
-            throw new IllegalArgumentException("You want to change history for member "+headHistoryDto.getHead().getFirstname()+" "+
-                    headHistoryDto.getHead().getLastname()+", but the specific history is for "+existingHeadHistory.get().getMember().getFirstname()+
-                    " "+ existingHeadHistory.get().getMember().getLastname());
+            throw new IllegalArgumentException("You want to change history for member "+headHistoryDto.getHead().getFirstname()+" "+headHistoryDto.getHead().getLastname()+
+                    ", but the specific history is for "+existingHeadHistory.get().getMember().getFirstname()+" "+existingHeadHistory.get().getMember().getLastname());
+
         }
 
 

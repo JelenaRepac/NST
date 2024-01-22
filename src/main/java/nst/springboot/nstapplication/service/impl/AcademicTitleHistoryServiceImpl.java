@@ -52,6 +52,10 @@ public class AcademicTitleHistoryServiceImpl implements AcademicTitleHistoryServ
                 throw new IllegalArgumentException("End date can't be before start date!");
             }
         }
+        if(academicTitleDTO.getStartDate().isAfter(LocalDate.now())){
+            throw new IllegalArgumentException("Can't set academic title for the future! Date can't be after today date!");
+        }
+
         Optional<Member> existingMember = null;
         if(academicTitleDTO.getMember().getId()!=null){
             existingMember = memberRepository.findById(academicTitleDTO.getMember().getId());
@@ -92,7 +96,15 @@ public class AcademicTitleHistoryServiceImpl implements AcademicTitleHistoryServ
                 throw new EntityNotFoundException("There is no scientific field with that id!");
             }
         }
-
+        Optional<AcademicTitleHistory> ac = academicTitleRepository.findCurrentAcademicTitleByMemberId(academicTitleDTO.getMember().getId());
+        if(ac.isPresent()){
+            if(academicTitleDTO.getStartDate().isBefore(ac.get().getStartDate()) && academicTitleDTO.getEndDate()==null){
+                throw new IllegalArgumentException("Actual academic title for member "+
+                        academicTitleDTO.getMember().getFirstname()+" "+
+                        academicTitleDTO.getMember().getLastname()+" is "+
+                        academicTitleDTO.getAcademicTitle().getName());
+            }
+        }
         List<AcademicTitleHistory> academicTitleHistoryList = academicTitleHistoryRepository.findAllByMemberIdAndEndDateNotNull(academicTitleDTO.getMember().getId());
         for(AcademicTitleHistory academicTitle : academicTitleHistoryList){
             if(academicTitleDTO.getEndDate() !=null){
@@ -100,28 +112,26 @@ public class AcademicTitleHistoryServiceImpl implements AcademicTitleHistoryServ
                     throw new IllegalArgumentException("Member "+ academicTitleDTO.getMember().getFirstname() +" "+academicTitleDTO.getMember().getLastname()+
                             " has been "+academicTitle.getAcademicTitle().getName()+" from "+academicTitle.getStartDate()+" to "+academicTitle.getEndDate());
                 }
-
             }
-
         }
         Optional<AcademicTitleHistory> academicTitleHistory = academicTitleHistoryRepository.findCurrentAcademicTitleByMemberId(academicTitleDTO.getMember().getId());
         if(academicTitleHistory.isPresent()){
-            if(academicTitleHistory.get().getEndDate()==null && academicTitleDTO.getStartDate().isBefore(academicTitleHistory.get().getStartDate())) {
-                throw new IllegalArgumentException("You provided start date in past! Actual academic title for member "+
-                        academicTitleDTO.getMember().getFirstname()+" "+academicTitleDTO.getMember().getLastname()+" is "+
-                        academicTitleHistory.get().getAcademicTitle().getName()+ " from "+academicTitleHistory.get().getStartDate());
-            }
-            else{
                 if(academicTitleDTO.getStartDate().isAfter(LocalDate.now())){
                     throw new IllegalArgumentException("Can't set academic title for the future! Date can't be after today date!");
                 }
-                academicTitleHistory.get().setEndDate(academicTitleDTO.getStartDate());
-                update(academicTitleHistory.get().getId(),academicTitleHistoryConverter.toDto(academicTitleHistory.get()));
-                academicTitleHistoryRepository.save(academicTitleHistory.get());
-            }
+                if(academicTitleDTO.getEndDate()!=null && academicTitleDTO.getEndDate().isAfter(academicTitleHistory.get().getStartDate())){
+                    academicTitleHistory.get().setEndDate(academicTitleDTO.getStartDate());
+                    update(academicTitleHistory.get().getId(),academicTitleHistoryConverter.toDto(academicTitleHistory.get()));
+                    academicTitleHistoryRepository.save(academicTitleHistory.get());
+                }
+                if(academicTitleDTO.getEndDate()==null && academicTitleHistory.get().getStartDate().isBefore(academicTitleDTO.getStartDate())){
+                    academicTitleHistory.get().setEndDate(academicTitleDTO.getStartDate());
+                    update(academicTitleHistory.get().getId(),academicTitleHistoryConverter.toDto(academicTitleHistory.get()));
+                    academicTitleHistoryRepository.save(academicTitleHistory.get());
+                }
         }
         if(academicTitleDTO.getEndDate()!=null) {
-            if (academicTitleDTO.getStartDate().isAfter(LocalDate.now()) && academicTitleDTO.getEndDate().isAfter(LocalDate.now())) {
+            if (academicTitleDTO.getStartDate().isBefore(LocalDate.now())) {
                 existingMember.get().setAcademicTitle(academicTitleConverter.toEntity(academicTitleDTO.getAcademicTitle()));
                 memberRepository.save(existingMember.get());
 
@@ -131,7 +141,6 @@ public class AcademicTitleHistoryServiceImpl implements AcademicTitleHistoryServ
             existingMember.get().setAcademicTitle(academicTitleConverter.toEntity(academicTitleDTO.getAcademicTitle()));
             memberRepository.save(existingMember.get());
         }
-
 
         return academicTitleHistoryConverter.toDto(academicTitleHistoryRepository.save(academicTitleHistoryConverter.toEntity(academicTitleDTO)));
     }
