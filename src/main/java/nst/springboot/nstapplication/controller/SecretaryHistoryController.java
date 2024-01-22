@@ -1,6 +1,7 @@
 package nst.springboot.nstapplication.controller;
 
 import jakarta.validation.Valid;
+import nst.springboot.nstapplication.dto.HeadHistoryDto;
 import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
 import nst.springboot.nstapplication.service.SecretaryHistoryService;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,15 @@ public class SecretaryHistoryController {
 
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<SecretaryHistoryDto> updateSecretaryHistory(@PathVariable Long id, @RequestBody SecretaryHistoryDto secretaryHistoryDto) {
+        SecretaryHistoryDto updatedSecretaryHistory = service.patchSecretaryHistory(id, secretaryHistoryDto);
+        if (updatedSecretaryHistory != null) {
+            return ResponseEntity.ok(updatedSecretaryHistory);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 //    @GetMapping("/department/{id}/history")
 //    public List<SecretaryHistoryDto> getHistoryForDepartmentId(@PathVariable("id") Long id)  {
 //        return service.getHistoryForDepartmentId(id);

@@ -1,6 +1,7 @@
 package nst.springboot.nstapplication.service.impl;
 
 import nst.springboot.nstapplication.converter.impl.DepartmentConverter;
+import nst.springboot.nstapplication.converter.impl.HeadHistoryConverter;
 import nst.springboot.nstapplication.converter.impl.MemberConverter;
 import nst.springboot.nstapplication.converter.impl.SecretaryHistoryConverter;
 import nst.springboot.nstapplication.domain.Department;
@@ -12,6 +13,7 @@ import nst.springboot.nstapplication.exception.EmptyResponseException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.exception.IllegalArgumentException;
 import nst.springboot.nstapplication.repository.DepartmentRepository;
+import nst.springboot.nstapplication.repository.HeadHistoryRepository;
 import nst.springboot.nstapplication.repository.MemberRepository;
 import nst.springboot.nstapplication.repository.SecretaryHistoryRepository;
 import nst.springboot.nstapplication.service.SecretaryHistoryService;
@@ -31,19 +33,26 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
     private DepartmentRepository departmentRepository;
     private DepartmentConverter departmentConverter;
     private SecretaryHistoryConverter secretaryHistoryConverter;
+    private HeadHistoryRepository headHistoryRepository;
+    private HeadHistoryConverter headHistoryConverter;
 
-    public SecretaryHistoryServiceImpl(DepartmentConverter departmentConverter, DepartmentRepository departmentRepository, SecretaryHistoryRepository repository, SecretaryHistoryConverter secretaryHistoryConverter, MemberRepository memberRepository, MemberConverter memberConverter) {
+    public SecretaryHistoryServiceImpl(DepartmentConverter departmentConverter, DepartmentRepository departmentRepository, SecretaryHistoryRepository repository, SecretaryHistoryConverter secretaryHistoryConverter, MemberRepository memberRepository, MemberConverter memberConverter, HeadHistoryRepository headHistoryRepository, HeadHistoryConverter headHistoryConverter) {
         this.repository = repository;
         this.secretaryHistoryConverter = secretaryHistoryConverter;
         this.memberRepository = memberRepository;
         this.memberConverter = memberConverter;
         this.departmentRepository = departmentRepository;
         this.departmentConverter = departmentConverter;
+        this.headHistoryRepository = headHistoryRepository;
+        this.headHistoryConverter = headHistoryConverter;
     }
 
 
     @Override
     public SecretaryHistoryDto save(SecretaryHistoryDto secretaryHistoryDTO) {
+        if(secretaryHistoryDTO.getStartDate() == null){
+            secretaryHistoryDTO.setStartDate(LocalDate.now());
+        }
         if (secretaryHistoryDTO.getEndDate() != null && secretaryHistoryDTO.getStartDate() != null) {
             if (secretaryHistoryDTO.getEndDate().isBefore(secretaryHistoryDTO.getStartDate())) {
                 throw new IllegalArgumentException("End date can't be before start date!");
@@ -119,6 +128,13 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
             }
         }
 
+        Optional<HeadHistory> activeHead = headHistoryRepository.findCurrentByMemberId(secretaryHistoryDTO.getMember().getId());
+        if(activeHead.isPresent()){
+            throw new IllegalArgumentException("Member "+secretaryHistoryDTO.getMember().getFirstname()+" "+secretaryHistoryDTO.getMember().getLastname()+" " +
+                    "can't be HEAD because member is at the SECRETARY position from "+activeHead.get().getStartDate()+ " for department "+activeHead.get().getDepartment().getName());
+
+        }
+
         return secretaryHistoryConverter.toDto(repository.save(secretaryHistoryConverter.toEntity(secretaryHistoryDTO)));
     }
 
@@ -182,5 +198,81 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
             secretaryHistoryDtoList.add(secretaryHistoryConverter.toDto(sc));
         }
         return secretaryHistoryDtoList;
+    }
+
+    @Override
+    public SecretaryHistoryDto patchSecretaryHistory(Long id, SecretaryHistoryDto secretaryHistoryDto) {
+        if(secretaryHistoryDto.getEndDate()!=null && secretaryHistoryDto.getStartDate()!= null){
+            if(secretaryHistoryDto.getEndDate().isBefore(secretaryHistoryDto.getStartDate())){
+                throw new IllegalArgumentException("End date can't be before start date!");
+            }
+        }
+
+        Optional<SecretaryHistory> existingSecretaryHistory = repository.findById(id);
+        if(!existingSecretaryHistory.isPresent()){
+            throw new EntityNotFoundException("There is no history with that id!");
+        }
+
+        if(secretaryHistoryDto.getMember() == null){
+            secretaryHistoryDto.setMember(memberConverter.toDto(existingSecretaryHistory.get().getMember()));
+        }
+        Optional<Member> existingMember = memberRepository.findById(existingSecretaryHistory.get().getMember().getId());
+        if(!existingMember.isPresent()){
+            throw new IllegalArgumentException("There is no member with that id!");
+        }
+        secretaryHistoryDto.setMember(memberConverter.toDto(existingMember.get()));
+        if(secretaryHistoryDto.getMember().getId()!=existingSecretaryHistory.get().getMember().getId()){
+            throw new IllegalArgumentException("You want to change history for member "+secretaryHistoryDto.getMember().getFirstname()+" "+
+                    secretaryHistoryDto.getMember().getLastname()+", but the specific history is for "+existingSecretaryHistory.get().getMember().getFirstname()+
+                    " "+ existingSecretaryHistory.get().getMember().getLastname());
+        }
+
+
+        if(secretaryHistoryDto.getDepartment() == null){
+            secretaryHistoryDto.setDepartment(departmentConverter.toDto(existingSecretaryHistory.get().getDepartment()));
+        }
+        Optional<Department> existingDepartment = departmentRepository.findById(secretaryHistoryDto.getDepartment().getId());
+        if(!existingDepartment.isPresent()){
+            throw new IllegalArgumentException("There is no department with that id!");
+        }
+        secretaryHistoryDto.setDepartment(departmentConverter.toDto(existingDepartment.get()));
+        if(secretaryHistoryDto.getDepartment().getId()!=existingSecretaryHistory.get().getDepartment().getId()){
+            throw new IllegalArgumentException("You want to change history for department "+secretaryHistoryDto.getDepartment().getName()+
+                    ", but the specific history is for "+existingSecretaryHistory.get().getDepartment().getName());
+
+        }
+
+        List<SecretaryHistory> existingHistories = repository.findByDepartmentId(secretaryHistoryDto.getDepartment().getId());
+        for(SecretaryHistory secretaryHistory : existingHistories) {
+            if (secretaryHistoryDto.getStartDate() != null && secretaryHistoryDto.getEndDate() != null && secretaryHistory.getStartDate() != null && secretaryHistory.getEndDate() != null) {
+                if (isDateOverlap(secretaryHistoryDto.getStartDate(), secretaryHistoryDto.getEndDate(),
+                        secretaryHistory.getStartDate(), secretaryHistory.getEndDate())) {
+                    throw new IllegalArgumentException("The member " + secretaryHistory.getMember().getFirstname() + " " +
+                            secretaryHistory.getMember().getLastname() +
+                            " already was at the SECRETARY position from " + secretaryHistory.getStartDate() + " to " + secretaryHistory.getEndDate() +
+                            " in department " + secretaryHistory.getDepartment().getName());
+                }
+            }
+        }
+        Optional<SecretaryHistory> activeSecretary = repository.findByDepartmentIdAndEndDateNull(secretaryHistoryDto.getDepartment().getId());
+        if(activeSecretary.isPresent()){
+            if(secretaryHistoryDto.getEndDate() == null){
+                if(secretaryHistoryDto.getStartDate().isAfter(activeSecretary.get().getStartDate())){
+                    activeSecretary.get().setEndDate(secretaryHistoryDto.getStartDate());
+                    repository.save(activeSecretary.get());
+                }
+            }
+            else{
+                if(secretaryHistoryDto.getStartDate().isAfter(activeSecretary.get().getStartDate())){
+                    activeSecretary.get().setEndDate(secretaryHistoryDto.getStartDate());
+                    repository.save(activeSecretary.get());
+                }
+            }
+        }
+
+        existingSecretaryHistory.get().setStartDate(secretaryHistoryDto.getStartDate());
+        existingSecretaryHistory.get().setEndDate(secretaryHistoryDto.getEndDate());
+
+        return secretaryHistoryConverter.toDto(repository.save(existingSecretaryHistory.get()));
     }
 }

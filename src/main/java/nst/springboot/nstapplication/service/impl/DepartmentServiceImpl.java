@@ -4,6 +4,7 @@
  */
 package nst.springboot.nstapplication.service.impl;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -118,29 +119,64 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public MemberDto getActiveSecretaryForDepartment(Long id) {
         Optional<Department> department= departmentRepository.findById(id);
+        MemberDto memberDto=null;
         if(!department.isPresent()){
             throw new EntityNotFoundException("There is no department with id: "+id);
         }
-          Optional<Member> secretary = secretaryHistoryRepository.findCurrentSecretaryByDepartmentId(id);
-          if(secretary.isPresent()){
-              return memberConverter.toDto(secretary.get());
-          }else{
-              throw new EntityNotFoundException("There is no active secretary for "+department.get().getName());
+
+      else{
+          List<SecretaryHistory> secretaryHistoryList= secretaryHistoryRepository.findByDepartmentId(id);
+          LocalDate currentDate = LocalDate.now();
+          for (SecretaryHistory secretaryHistory : secretaryHistoryList) {
+              if(secretaryHistory.getStartDate() != null && secretaryHistory.getEndDate() != null &&
+              ((secretaryHistory.getStartDate().isBefore(currentDate) || secretaryHistory.getStartDate().isEqual(currentDate) ) &&
+              (secretaryHistory.getEndDate().isAfter(currentDate) || secretaryHistory.getEndDate().isEqual(currentDate) ))
+              ) {
+                  memberDto= memberConverter.toDto(secretaryHistory.getMember());
+              }
+              if(secretaryHistory.getEndDate()==null &&
+                      (secretaryHistory.getStartDate().isBefore(currentDate) || secretaryHistory.getStartDate().isEqual(currentDate)) ){
+                  System.out.println(secretaryHistory.getStartDate());
+                  memberDto= memberConverter.toDto(secretaryHistory.getMember());
+              }
           }
-    }
+      }
+      if(memberDto==null){
+          throw new EntityNotFoundException("There is no active secretary for "+department.get().getName()+" department.");
+      }
+      return memberDto;
+
+}
 
     @Override
     public MemberDto getActiveHeadForDepartment(Long id) {
         Optional<Department> department= departmentRepository.findById(id);
+        MemberDto memberDto=null;
         if(!department.isPresent()){
             throw new EntityNotFoundException("There is no department with id: "+id);
         }
-        Optional<Member> head = headHistoryRepository.findCurrentHeadByDepartmentId(id);
-        if(head.isPresent()){
-            return memberConverter.toDto(head.get());
-        }else{
-            throw new EntityNotFoundException("There is no active head for "+department.get().getName());
+
+        else{
+            List<HeadHistory> headHistoryList= headHistoryRepository.findByDepartmentId(id);
+            LocalDate currentDate = LocalDate.now();
+            for (HeadHistory headHistory : headHistoryList) {
+                if(headHistory.getStartDate() != null && headHistory.getEndDate() != null &&
+                        ((headHistory.getStartDate().isBefore(currentDate) || headHistory.getStartDate().isEqual(currentDate) ) &&
+                                (headHistory.getEndDate().isAfter(currentDate) || headHistory.getEndDate().isEqual(currentDate) ))
+                ) {
+                    memberDto= memberConverter.toDto(headHistory.getMember());
+                }
+                if(headHistory.getEndDate()==null &&
+                        (headHistory.getStartDate().isBefore(currentDate) || headHistory.getStartDate().isEqual(currentDate)) ){
+                    System.out.println(headHistory.getStartDate());
+                    memberDto= memberConverter.toDto(headHistory.getMember());
+                }
+            }
         }
+        if(memberDto==null){
+            throw new EntityNotFoundException("There is no active head for "+department.get().getName()+" department.");
+        }
+        return memberDto;
     }
 
     @Override

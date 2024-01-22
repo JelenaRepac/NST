@@ -2,6 +2,8 @@ package nst.springboot.nstapplication.controller;
 
 import jakarta.validation.Valid;
 import nst.springboot.nstapplication.dto.HeadHistoryDto;
+import nst.springboot.nstapplication.dto.MemberDto;
+import nst.springboot.nstapplication.dto.MemberPatchRequest;
 import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
 import nst.springboot.nstapplication.service.HeadHistoryService;
 import nst.springboot.nstapplication.service.SecretaryHistoryService;
@@ -44,7 +46,16 @@ public class HeadHistoryController {
     public ResponseEntity<String> delete(@PathVariable Long id) {
         service.delete(id);
         return new ResponseEntity<>("Head history removed!", HttpStatus.OK);
+    }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<HeadHistoryDto> updateHeadHistory(@PathVariable Long id, @RequestBody HeadHistoryDto headHistoryDto) {
+        HeadHistoryDto updatedHeadHistory = service.patchHeadHistory(id, headHistoryDto);
+        if (updatedHeadHistory != null) {
+            return ResponseEntity.ok(updatedHeadHistory);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 //    @GetMapping("/department/{id}/history")

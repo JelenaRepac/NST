@@ -12,4 +12,5 @@ public interface HeadHistoryService {
     void delete(Long id);
     HeadHistoryDto findById(Long id);
     List<HeadHistoryDto> getHistoryForDepartmentId(Long id);
+    HeadHistoryDto patchHeadHistory(Long id, HeadHistoryDto headHistoryDto);
 }

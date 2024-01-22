@@ -11,4 +11,5 @@ public interface SecretaryHistoryService {
     void delete(Long id);
     SecretaryHistoryDto findById(Long id);
     List<SecretaryHistoryDto> getHistoryForDepartmentId(Long id);
+    SecretaryHistoryDto patchSecretaryHistory(Long id, SecretaryHistoryDto secretaryHistoryDto);
 }

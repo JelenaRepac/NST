@@ -172,9 +172,17 @@ public class MemberServiceImpl implements MemberService {
         headHistoryRepository.save(new HeadHistory(null, savedMember.getDepartment(), savedMember, LocalDate.now(),null));
     }
     private void checkExistingMemberAndThrowException(Member member, Long roleId, String errorMessage) {
-        Optional<Member> existingMember = memberRepository.findByDepartmentNameAndRoleId(member.getDepartment().getName(), roleId);
-        if (existingMember.isPresent()) {
-            throw new EntityNotFoundException(errorMessage);
+        if(roleId==ConstantsCustom.SECRETARY_ROLE_ID) {
+            Optional<Member> secretaryHistory = secretaryHistoryRepository.findCurrentSecretaryByDepartmentId(member.getDepartment().getId());
+            if (secretaryHistory.isPresent()) {
+                throw new EntityNotFoundException(errorMessage);
+            }
+        }
+        if(roleId==ConstantsCustom.HEAD_ROLE_ID) {
+            Optional<Member> headHistory = headHistoryRepository.findCurrentHeadByDepartmentId(member.getDepartment().getId());
+            if (headHistory.isPresent()) {
+                throw new EntityNotFoundException(errorMessage);
+            }
         }
     }
 
