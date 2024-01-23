@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -19,10 +20,10 @@ public interface HeadHistoryRepository extends JpaRepository<HeadHistory, Long> 
             "AND sh.endDate IS NULL")
     Optional<HeadHistory> findCurrentByMemberId(@Param("memberId") Long memberId);
 
-    @Query("SELECT sh.member FROM HeadHistory sh " +
+    @Query("SELECT sh FROM HeadHistory sh " +
             "WHERE sh.department.id = :departmentId " +
-            "AND sh.endDate IS NULL")
-    Optional<Member> findCurrentHeadByDepartmentId(@Param("departmentId") Long departmentId);
+            "AND sh.endDate IS NULL OR (sh.startDate < :localDate AND sh.endDate > :localDate)")
+    Optional<HeadHistory> findCurrentHeadByDepartmentId(@Param("departmentId") Long departmentId,   @Param("localDate") LocalDate localDate);
 
     List<HeadHistory> findByDepartmentId(Long id);
 

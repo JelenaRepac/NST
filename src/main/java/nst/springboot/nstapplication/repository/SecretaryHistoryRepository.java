@@ -19,10 +19,10 @@ public interface SecretaryHistoryRepository extends JpaRepository<SecretaryHisto
             "AND sh.endDate IS NULL OR (sh.startDate < :localDate AND sh.endDate > :localDate)")
     Optional<SecretaryHistory> findCurrentByMemberId(@Param("memberId") Long memberId, @Param("localDate") LocalDate localDate) ;
 
-    @Query("SELECT sh.member FROM SecretaryHistory sh " +
+    @Query("SELECT sh FROM SecretaryHistory sh " +
             "WHERE sh.department.id = :departmentId " +
-            "AND sh.endDate IS NULL")
-    Optional<Member> findCurrentSecretaryByDepartmentId(@Param("departmentId") Long departmentId);
+            "AND sh.endDate IS NULL OR (sh.startDate < :localDate AND sh.endDate > :localDate)")
+    Optional<SecretaryHistory> findCurrentSecretaryByDepartmentId(@Param("departmentId") Long departmentId,  @Param("localDate") LocalDate localDate);
     List<SecretaryHistory> findByDepartmentId(Long id);
     List<SecretaryHistory> findByMemberId(Long id);
     @Query("SELECT h FROM SecretaryHistory h " +

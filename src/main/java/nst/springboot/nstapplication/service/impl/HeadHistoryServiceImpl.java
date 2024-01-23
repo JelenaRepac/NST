@@ -49,14 +49,17 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
 
     @Override
     public HeadHistoryDto save(HeadHistoryDto headHistoryDto){
+        //Ako se posalje null za start date postavlja se danasnji
         if(headHistoryDto.getStartDate() == null){
             headHistoryDto.setStartDate(LocalDate.now());
         }
+        //Ako je end date pre start date a
         if(headHistoryDto.getEndDate()!=null && headHistoryDto.getStartDate()!= null){
             if(headHistoryDto.getEndDate().isBefore(headHistoryDto.getStartDate())){
                 throw new IllegalArgumentException("End date can't be before start date!");
             }
         }
+        //Provera za clana, da li postoji
         Optional<Member> existingMember;
         if(headHistoryDto.getHead().getId()!=null){
             existingMember = memberRepository.findById(headHistoryDto.getHead().getId());
@@ -80,8 +83,8 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
                 }
             }
         }
+        //Provera za katedru i da li clan pripada toj katedri
         Optional<Department> existingDepartment;
-
         if(headHistoryDto.getDepartment().getId()!=null) {
             existingDepartment = departmentRepository.findById(headHistoryDto.getDepartment().getId());
             if(existingDepartment.isPresent()){
@@ -111,9 +114,12 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
 
             }
         }
-
+        //Lista istorija za konkretnu katedru
         List<HeadHistory> existingHistoryList = repository.findByDepartmentId(headHistoryDto.getDepartment().getId());
-
+        //Ukoliko se posalje end date null, a postoji trenutno aktivni sef, a
+        // prosledjeni start date je nakon tog postojeceg
+        // postojeci se setuje end date na sadasnji
+        // u drugom slucaju exc
         for (HeadHistory existingHistory : existingHistoryList) {
             Optional<Member> member = memberRepository.findById(existingHistory.getMember().getId());
             if(headHistoryDto.getEndDate() ==null && existingHistory.getEndDate() ==null) {
@@ -121,11 +127,13 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
                     existingHistory.setEndDate(headHistoryDto.getStartDate());
                     repository.save(existingHistory);
                 }
-//                throw new IllegalArgumentException("There is already head member " + existingHistory.getMember().getFirstname()
-//                        + " " + existingHistory.getMember().getLastname() + " for department " + existingHistory.getDepartment().getName());
-
+               else{
+                    throw new IllegalArgumentException("Member "+existingHistory.getMember().getFirstname()+
+                            " "+existingHistory.getMember().getLastname()+" is at the SECRETARY postion from "+
+                            existingHistory.getStartDate());
+                }
             }
-
+            //Ukoliko su oba datuma poslata, provera da li postoji preklapanja medju sadasnjim istorijama
             if(existingHistory.getStartDate()!= null && existingHistory.getEndDate() !=null &&  headHistoryDto.getStartDate()!=null && headHistoryDto.getEndDate()!=null) {
                 if (isDateOverlap(existingHistory.getStartDate(), existingHistory.getEndDate(),
                         headHistoryDto.getStartDate(), headHistoryDto.getEndDate())) {
@@ -136,7 +144,7 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
                 }
             }
         }
-
+        //Provera da li je clan trenutno na poziciji sekretara
         Optional<SecretaryHistory> activeSecretary = secretaryHistoryRepository.findCurrentByMemberId(headHistoryDto.getHead().getId(), LocalDate.now());
         if(activeSecretary.isPresent()){
             throw new IllegalArgumentException("Member "+headHistoryDto.getHead().getFirstname()+" "+headHistoryDto.getHead().getLastname()+" " +

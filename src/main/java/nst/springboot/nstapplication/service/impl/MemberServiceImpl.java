@@ -11,6 +11,7 @@ import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.exception.IllegalArgumentException;
 import nst.springboot.nstapplication.repository.*;
 import nst.springboot.nstapplication.service.MemberService;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -159,6 +160,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private void handleSecretaryAttributes(Member member) {
+
         checkExistingMemberAndThrowException(member, ConstantsCustom.SECRETARY_ROLE_ID, "The department already has a secretary member.");
         member.setRole(roleRepository.findByName(ConstantsCustom.SECRETARY).orElseThrow(() -> new EntityNotFoundException("Secretary role not found")));
         Member savedMember = memberRepository.save(member);
@@ -173,15 +175,17 @@ public class MemberServiceImpl implements MemberService {
     }
     private void checkExistingMemberAndThrowException(Member member, Long roleId, String errorMessage) {
         if(roleId==ConstantsCustom.SECRETARY_ROLE_ID) {
-            Optional<Member> secretaryHistory = secretaryHistoryRepository.findCurrentSecretaryByDepartmentId(member.getDepartment().getId());
-            if (secretaryHistory.isPresent()) {
-                throw new EntityNotFoundException(errorMessage);
+            Optional<SecretaryHistory> secretaryHistory = secretaryHistoryRepository.findCurrentSecretaryByDepartmentId(member.getDepartment().getId(), LocalDate.now());
+            if(secretaryHistory.get().getStartDate().isBefore(LocalDate.now()) && secretaryHistory.get().getEndDate()==null){
+                secretaryHistory.get().setEndDate(LocalDate.now());
+                secretaryHistoryRepository.save(secretaryHistory.get());
             }
         }
         if(roleId==ConstantsCustom.HEAD_ROLE_ID) {
-            Optional<Member> headHistory = headHistoryRepository.findCurrentHeadByDepartmentId(member.getDepartment().getId());
-            if (headHistory.isPresent()) {
-                throw new EntityNotFoundException(errorMessage);
+            Optional<HeadHistory> headHistory = headHistoryRepository.findCurrentHeadByDepartmentId(member.getDepartment().getId(), LocalDate.now());
+            if(headHistory.get().getStartDate().isBefore(LocalDate.now()) && headHistory.get().getEndDate()==null){
+                headHistory.get().setEndDate(LocalDate.now());
+                headHistoryRepository.save(headHistory.get());
             }
         }
     }

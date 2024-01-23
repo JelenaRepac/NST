@@ -50,14 +50,17 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
 
     @Override
     public SecretaryHistoryDto save(SecretaryHistoryDto secretaryHistoryDTO) {
+        //Ako se posalje null za start date postavlja se danasnji
         if(secretaryHistoryDTO.getStartDate() == null){
             secretaryHistoryDTO.setStartDate(LocalDate.now());
         }
+        //Ako je end date pre start date a
         if (secretaryHistoryDTO.getEndDate() != null && secretaryHistoryDTO.getStartDate() != null) {
             if (secretaryHistoryDTO.getEndDate().isBefore(secretaryHistoryDTO.getStartDate())) {
                 throw new IllegalArgumentException("End date can't be before start date!");
             }
         }
+        //Provera za clana, da li postoji
         Optional<Member> existingMember;
         if (secretaryHistoryDTO.getMember().getId() != null) {
             existingMember = memberRepository.findById(secretaryHistoryDTO.getMember().getId());
@@ -78,8 +81,8 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
                 }
             }
         }
+        //Provera za katedru i da li clan pripada toj katedri
         Optional<Department> existingDepartment;
-
         if (secretaryHistoryDTO.getDepartment().getId() != null) {
             existingDepartment = departmentRepository.findById(secretaryHistoryDTO.getDepartment().getId());
             if (existingDepartment.isPresent()) {
@@ -107,8 +110,13 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
             }
         }
 
+        //Lista istorija za konkretnu katedru
         List<SecretaryHistory> existingHistoryList = repository.findByDepartmentId(secretaryHistoryDTO.getDepartment().getId());
 
+        //Ukoliko se posalje end date null, a postoji trenutno aktivni sekretar, a
+        // prosledjeni start date je nakon tog postojeceg
+        // postojeci se setuje end date na sadasnji
+        // u drugom slucaju exc
         for (SecretaryHistory existingHistory : existingHistoryList) {
             Optional<Member> member = memberRepository.findById(existingHistory.getMember().getId());
             if (secretaryHistoryDTO.getEndDate() == null && existingHistory.getEndDate() == null) {
@@ -116,9 +124,14 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
                     existingHistory.setEndDate(secretaryHistoryDTO.getStartDate());
                     repository.save(existingHistory);
                 }
+                else{
+                    throw new IllegalArgumentException("Member "+existingHistory.getMember().getFirstname()+
+                            " "+existingHistory.getMember().getLastname()+" is at the SECRETARY postion from "+
+                            existingHistory.getStartDate());
+                }
 
             }
-
+            //Ukoliko su oba datuma poslata, provera da li postoji preklapanja medju sadasnjim istorijama
             if (existingHistory.getStartDate() != null && existingHistory.getEndDate() != null && secretaryHistoryDTO.getStartDate() != null && secretaryHistoryDTO.getEndDate() != null) {
                 if (isDateOverlap(existingHistory.getStartDate(), existingHistory.getEndDate(),
                         secretaryHistoryDTO.getStartDate(), secretaryHistoryDTO.getEndDate())) {
@@ -130,10 +143,11 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
             }
         }
 
+        //Provera da li je clan trenutno na poziciji šefa
         Optional<HeadHistory> activeHead = headHistoryRepository.findCurrentByMemberId(secretaryHistoryDTO.getMember().getId());
         if(activeHead.isPresent()){
             throw new IllegalArgumentException("Member "+secretaryHistoryDTO.getMember().getFirstname()+" "+secretaryHistoryDTO.getMember().getLastname()+" " +
-                    "can't be HEAD because member is at the SECRETARY position from "+activeHead.get().getStartDate()+ " for department "+activeHead.get().getDepartment().getName());
+                    "can't be SECRETARY because member is at the HEAD position from "+activeHead.get().getStartDate()+ " for department "+activeHead.get().getDepartment().getName());
 
         }
 
