@@ -1,23 +1,20 @@
 package nst.springboot.nstapplication.service.impl;
 
+import lombok.RequiredArgsConstructor;
+import nst.springboot.nstapplication.constants.ConstantsCustom;
 import nst.springboot.nstapplication.converter.impl.DepartmentConverter;
 import nst.springboot.nstapplication.converter.impl.HeadHistoryConverter;
 import nst.springboot.nstapplication.converter.impl.MemberConverter;
 import nst.springboot.nstapplication.converter.impl.SecretaryHistoryConverter;
-import nst.springboot.nstapplication.domain.Department;
-import nst.springboot.nstapplication.domain.HeadHistory;
-import nst.springboot.nstapplication.domain.Member;
-import nst.springboot.nstapplication.domain.SecretaryHistory;
+import nst.springboot.nstapplication.domain.*;
 import nst.springboot.nstapplication.dto.SecretaryHistoryDto;
 import nst.springboot.nstapplication.exception.EmptyResponseException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.exception.IllegalArgumentException;
-import nst.springboot.nstapplication.repository.DepartmentRepository;
-import nst.springboot.nstapplication.repository.HeadHistoryRepository;
-import nst.springboot.nstapplication.repository.MemberRepository;
-import nst.springboot.nstapplication.repository.SecretaryHistoryRepository;
+import nst.springboot.nstapplication.repository.*;
 import nst.springboot.nstapplication.service.SecretaryHistoryService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,29 +23,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
-    private SecretaryHistoryRepository repository;
-    private MemberRepository memberRepository;
-    private MemberConverter memberConverter;
-    private DepartmentRepository departmentRepository;
-    private DepartmentConverter departmentConverter;
-    private SecretaryHistoryConverter secretaryHistoryConverter;
-    private HeadHistoryRepository headHistoryRepository;
-    private HeadHistoryConverter headHistoryConverter;
 
-    public SecretaryHistoryServiceImpl(DepartmentConverter departmentConverter, DepartmentRepository departmentRepository, SecretaryHistoryRepository repository, SecretaryHistoryConverter secretaryHistoryConverter, MemberRepository memberRepository, MemberConverter memberConverter, HeadHistoryRepository headHistoryRepository, HeadHistoryConverter headHistoryConverter) {
-        this.repository = repository;
-        this.secretaryHistoryConverter = secretaryHistoryConverter;
-        this.memberRepository = memberRepository;
-        this.memberConverter = memberConverter;
-        this.departmentRepository = departmentRepository;
-        this.departmentConverter = departmentConverter;
-        this.headHistoryRepository = headHistoryRepository;
-        this.headHistoryConverter = headHistoryConverter;
-    }
-
+    private final SecretaryHistoryRepository repository;
+    private final MemberRepository memberRepository;
+    private final MemberConverter memberConverter;
+    private final DepartmentRepository departmentRepository;
+    private final DepartmentConverter departmentConverter;
+    private final SecretaryHistoryConverter secretaryHistoryConverter;
+    private final HeadHistoryRepository headHistoryRepository;
+    private final MemberServiceImpl memberService;
+    private final RoleRepository roleRepository;
 
     @Override
+    @Transactional
     public SecretaryHistoryDto save(SecretaryHistoryDto secretaryHistoryDTO) {
         //Ako se posalje null za start date postavlja se danasnji
         if(secretaryHistoryDTO.getStartDate() == null){
@@ -122,7 +111,12 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
             if (secretaryHistoryDTO.getEndDate() == null && existingHistory.getEndDate() == null) {
                 if(secretaryHistoryDTO.getStartDate().isAfter(existingHistory.getStartDate())){
                     existingHistory.setEndDate(secretaryHistoryDTO.getStartDate());
-                    repository.save(existingHistory);
+                    Optional<Member> activeMember = memberRepository.findById(existingHistory.getMember().getId());
+                    if(activeMember.isPresent()){
+                        activeMember.get().setRole(Role.builder().id(ConstantsCustom.DEFAULT_ROLE_ID).name(ConstantsCustom.DEFAULT_ROLE).build());
+                        memberService.patchUpdateMember(activeMember.get().getId(), activeMember.get());
+                        repository.save(existingHistory);
+                    }
                 }
                 else{
                     throw new IllegalArgumentException("Member "+existingHistory.getMember().getFirstname()+
@@ -145,10 +139,19 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
 
         //Provera da li je clan trenutno na poziciji šefa
         Optional<HeadHistory> activeHead = headHistoryRepository.findCurrentByMemberId(secretaryHistoryDTO.getMember().getId());
-        if(activeHead.isPresent()){
-            throw new IllegalArgumentException("Member "+secretaryHistoryDTO.getMember().getFirstname()+" "+secretaryHistoryDTO.getMember().getLastname()+" " +
-                    "can't be SECRETARY because member is at the HEAD position from "+activeHead.get().getStartDate()+ " for department "+activeHead.get().getDepartment().getName());
+        if(activeHead.isPresent()) {
+            if (secretaryHistoryDTO.getEndDate()==null &&
+                    ( secretaryHistoryDTO.getStartDate().isAfter(activeHead.get().getStartDate()) ||  secretaryHistoryDTO.getStartDate().isEqual(activeHead.get().getStartDate()))){
+                throw new IllegalArgumentException("Member "+secretaryHistoryDTO.getMember().getFirstname()+" "+secretaryHistoryDTO.getMember().getLastname()+" " +
+                        "can't be SECRETARY because member is at the HEAD position from "+activeHead.get().getStartDate()+ " for department "+activeHead.get().getDepartment().getName());
+            }
 
+        }
+        if(secretaryHistoryDTO.getStartDate()!=null &&
+            (secretaryHistoryDTO.getStartDate().isBefore(LocalDate.now()) || secretaryHistoryDTO.getStartDate().isEqual(LocalDate.now())) &&
+            (secretaryHistoryDTO.getEndDate()==null || secretaryHistoryDTO.getEndDate().isAfter(LocalDate.now())) ){
+           existingMember.get().setRole(Role.builder().name(ConstantsCustom.SECRETARY).id(ConstantsCustom.SECRETARY_ROLE_ID).build());
+           secretaryHistoryDTO.setMember(memberService.patchUpdateMember(existingMember.get().getId(),existingMember.get()));
         }
 
         return secretaryHistoryConverter.toDto(repository.save(secretaryHistoryConverter.toEntity(secretaryHistoryDTO)));
@@ -217,7 +220,9 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
     }
 
     @Override
+    @Transactional(rollbackFor = {Exception.class})
     public SecretaryHistoryDto patchSecretaryHistory(Long id, SecretaryHistoryDto secretaryHistoryDto) {
+
         if(secretaryHistoryDto.getEndDate()!=null && secretaryHistoryDto.getStartDate()!= null){
             if(secretaryHistoryDto.getEndDate().isBefore(secretaryHistoryDto.getStartDate())){
                 throw new IllegalArgumentException("End date can't be before start date!");
@@ -257,6 +262,7 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
 
         }
 
+        //Istorija za konkretnu katedru
         List<SecretaryHistory> existingHistories = repository.findByDepartmentId(secretaryHistoryDto.getDepartment().getId());
         for(SecretaryHistory secretaryHistory : existingHistories) {
             if (secretaryHistoryDto.getStartDate() != null && secretaryHistoryDto.getEndDate() != null && secretaryHistory.getStartDate() != null && secretaryHistory.getEndDate() != null) {
@@ -269,18 +275,21 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
                 }
             }
         }
-        Optional<SecretaryHistory> activeSecretary = repository.findByDepartmentIdAndEndDateNull(secretaryHistoryDto.getDepartment().getId());
+        //aktivan sekretar
+        Optional<SecretaryHistory> activeSecretary = repository.findCurrentSecretaryByDepartmentId(secretaryHistoryDto.getDepartment().getId(), LocalDate.now());
         if(activeSecretary.isPresent()){
-            if(secretaryHistoryDto.getEndDate() == null){
-                if(secretaryHistoryDto.getStartDate().isAfter(activeSecretary.get().getStartDate())){
+            System.out.println(activeSecretary.get().getMember().getFirstname());
+            if(secretaryHistoryDto.getEndDate() == null) {
+                if (secretaryHistoryDto.getStartDate().isAfter(activeSecretary.get().getStartDate())) {
+                    //Aktivni sekretar se setuje na default role u
                     activeSecretary.get().setEndDate(secretaryHistoryDto.getStartDate());
-                    repository.save(activeSecretary.get());
-                }
-            }
-            else{
-                if(secretaryHistoryDto.getStartDate().isAfter(activeSecretary.get().getStartDate())){
-                    activeSecretary.get().setEndDate(secretaryHistoryDto.getStartDate());
-                    repository.save(activeSecretary.get());
+                    Optional<Member> member = memberRepository.findById(activeSecretary.get().getMember().getId());
+                    if (member.isPresent()) {
+                        System.out.println("hej");
+                        member.get().setRole(roleRepository.findById(ConstantsCustom.DEFAULT_ROLE_ID).get());
+                        activeSecretary.get().setMember(memberConverter.toEntity(memberService.patchUpdateMember(member.get().getId(),existingMember.get())));
+                        repository.save(activeSecretary.get());
+                    }
                 }
             }
         }
@@ -288,6 +297,12 @@ public class SecretaryHistoryServiceImpl implements SecretaryHistoryService {
         existingSecretaryHistory.get().setStartDate(secretaryHistoryDto.getStartDate());
         existingSecretaryHistory.get().setEndDate(secretaryHistoryDto.getEndDate());
 
+        if(existingSecretaryHistory.get().getStartDate()!=null &&
+                (existingSecretaryHistory.get().getStartDate().isBefore(LocalDate.now()) || existingSecretaryHistory.get().getStartDate().isEqual(LocalDate.now())) &&
+                (existingSecretaryHistory.get().getEndDate()==null || existingSecretaryHistory.get().getEndDate().isAfter(LocalDate.now()))){
+            existingMember.get().setRole(Role.builder().id(ConstantsCustom.SECRETARY_ROLE_ID).name(ConstantsCustom.SECRETARY).build());
+            existingSecretaryHistory.get().setMember(memberConverter.toEntity(memberService.patchUpdateMember(existingMember.get().getId(),existingMember.get())));
+        }
         return secretaryHistoryConverter.toDto(repository.save(existingSecretaryHistory.get()));
     }
 }

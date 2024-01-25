@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
 import nst.springboot.nstapplication.converter.impl.HeadHistoryConverter;
 import nst.springboot.nstapplication.converter.impl.MemberConverter;
 import nst.springboot.nstapplication.converter.impl.SecretaryHistoryConverter;
@@ -36,31 +37,17 @@ import org.springframework.stereotype.Service;
  * @author student2
  */
 @Service
+@RequiredArgsConstructor
 public class DepartmentServiceImpl implements DepartmentService {
 
-    private DepartmentConverter departmentConverter;
-    private DepartmentRepository departmentRepository;
-    private SecretaryHistoryRepository secretaryHistoryRepository;
-    private SecretaryHistoryConverter secretaryHistoryConverter;
-    private HeadHistoryRepository headHistoryRepository;
-    private HeadHistoryConverter headHistoryConverter;
-    private MemberConverter memberConverter;
-    private MemberRepository memberRepository;
-    public DepartmentServiceImpl(
-            DepartmentRepository departmentRepository,
-            DepartmentConverter departmentConverter,
-            SecretaryHistoryRepository secretaryHistoryRepository,
-            SecretaryHistoryConverter secretaryHistoryConverter, HeadHistoryRepository headHistoryRepository,
-            HeadHistoryConverter headHistoryConverter, MemberConverter memberConverter, MemberRepository memberRepository) {
-        this.departmentRepository = departmentRepository;
-        this.departmentConverter = departmentConverter;
-        this.secretaryHistoryRepository=secretaryHistoryRepository;
-        this.secretaryHistoryConverter = secretaryHistoryConverter;
-        this.headHistoryRepository=headHistoryRepository;
-        this.headHistoryConverter = headHistoryConverter;
-        this.memberConverter= memberConverter;
-        this.memberRepository = memberRepository;
-    }
+    private final DepartmentConverter departmentConverter;
+    private final DepartmentRepository departmentRepository;
+    private final SecretaryHistoryRepository secretaryHistoryRepository;
+    private final SecretaryHistoryConverter secretaryHistoryConverter;
+    private final HeadHistoryRepository headHistoryRepository;
+    private final HeadHistoryConverter headHistoryConverter;
+    private final MemberConverter memberConverter;
+    private final MemberRepository memberRepository;
 
     @Override
     public DepartmentDto save(DepartmentDto departmentDto)  {
@@ -119,7 +106,8 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public MemberDto getActiveSecretaryForDepartment(Long id) {
         Optional<Department> department= departmentRepository.findById(id);
-        MemberDto memberDto=null;
+        MemberDto memberDtoEndNull=null;
+        MemberDto memberDto = null;
         if(!department.isPresent()){
             throw new EntityNotFoundException("There is no department with id: "+id);
         }
@@ -137,12 +125,15 @@ public class DepartmentServiceImpl implements DepartmentService {
               if(secretaryHistory.getEndDate()==null &&
                       (secretaryHistory.getStartDate().isBefore(currentDate) || secretaryHistory.getStartDate().isEqual(currentDate)) ){
                   System.out.println(secretaryHistory.getStartDate());
-                  memberDto= memberConverter.toDto(secretaryHistory.getMember());
+                  memberDtoEndNull= memberConverter.toDto(secretaryHistory.getMember());
               }
           }
       }
-      if(memberDto==null){
+      if(memberDto==null && memberDtoEndNull==null){
           throw new EntityNotFoundException("There is no active secretary for "+department.get().getName()+" department.");
+      }
+      if(memberDtoEndNull!=null){
+          return memberDtoEndNull;
       }
       return memberDto;
 
@@ -152,6 +143,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public MemberDto getActiveHeadForDepartment(Long id) {
         Optional<Department> department= departmentRepository.findById(id);
         MemberDto memberDto=null;
+        MemberDto memberDtoEndNull=null;
         if(!department.isPresent()){
             throw new EntityNotFoundException("There is no department with id: "+id);
         }
@@ -169,12 +161,15 @@ public class DepartmentServiceImpl implements DepartmentService {
                 if(headHistory.getEndDate()==null &&
                         (headHistory.getStartDate().isBefore(currentDate) || headHistory.getStartDate().isEqual(currentDate)) ){
                     System.out.println(headHistory.getStartDate());
-                    memberDto= memberConverter.toDto(headHistory.getMember());
+                    memberDtoEndNull= memberConverter.toDto(headHistory.getMember());
                 }
             }
         }
-        if(memberDto==null){
+        if(memberDto==null && memberDtoEndNull==null){
             throw new EntityNotFoundException("There is no active head for "+department.get().getName()+" department.");
+        }
+        if(memberDtoEndNull!=null){
+            return  memberDtoEndNull;
         }
         return memberDto;
     }

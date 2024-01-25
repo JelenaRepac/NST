@@ -10,6 +10,5 @@ public interface RoleService {
     RoleDto save(RoleDto roleDto);
     List<RoleDto> getAll();
     RoleDto findById(Long id);
-
     RoleDto partialUpdate(Long id, Map<String, String> updates);
 }

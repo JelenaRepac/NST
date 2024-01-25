@@ -4,6 +4,7 @@ import nst.springboot.nstapplication.converter.DtoEntityConverter;
 import nst.springboot.nstapplication.domain.Member;
 import nst.springboot.nstapplication.dto.MemberDto;
 import nst.springboot.nstapplication.dto.MemberHeadSecretaryDto;
+import nst.springboot.nstapplication.dto.MemberPatchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class MemberConverter implements DtoEntityConverter<MemberDto, Member> {
                 academicTitle(academicTitleConverter.toDto(entity.getAcademicTitle())).
                 educationTitle(educationTitleConverter.toDto(entity.getEducationTitle())).
                 scientificField(scientificFieldConverter.toDto(entity.getScientificField())).
-                role(roleConverter.toDto(entity.getRole())).
+                role(entity.getRole()==null ? null : roleConverter.toDto(entity.getRole())).
                 department(departmentConverter.toDto(entity.getDepartment())).
                 build();
     }

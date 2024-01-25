@@ -25,6 +25,5 @@ public interface DepartmentService {
     MemberDto getActiveHeadForDepartment(Long id);
     List<SecretaryHistoryDto> getSecretaryHistoryForDepartment(Long id);
     List<HeadHistoryDto> getHeadHistoryForDepartment(Long id);
-
     List<MemberDto> getAllMembersByDepartmentId(Long id);
 }

@@ -1,6 +1,7 @@
 package nst.springboot.nstapplication.service.impl;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import nst.springboot.nstapplication.converter.impl.AcademicTitleConverter;
 import nst.springboot.nstapplication.converter.impl.AcademicTitleHistoryConverter;
 import nst.springboot.nstapplication.converter.impl.MemberConverter;
@@ -24,25 +25,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AcademicTitleHistoryServiceImpl implements AcademicTitleHistoryService {
-    private AcademicTitleHistoryConverter academicTitleHistoryConverter;
-    private AcademicTitleHistoryRepository academicTitleHistoryRepository;
-    private MemberRepository memberRepository;
-    private MemberConverter memberConverter;
-    private ScientificFieldConverter scientificFieldConverter;
-    private AcademicTitleConverter academicTitleConverter;
-    private AcademicTitleRepository academicTitleRepository;
-    private ScientificFieldRepository scientificFieldRepository;
-    public AcademicTitleHistoryServiceImpl(AcademicTitleHistoryConverter academicTitleConverter, AcademicTitleHistoryRepository academicTitleRepository, MemberRepository memberRepository, MemberConverter memberConverter, ScientificFieldConverter scientificFieldConverter, AcademicTitleConverter academicTitleConverter1, AcademicTitleRepository academicTitleRepository1, ScientificFieldRepository scientificFieldRepository) {
-        this.academicTitleHistoryConverter = academicTitleConverter;
-        this.academicTitleHistoryRepository = academicTitleRepository;
-        this.memberRepository = memberRepository;
-        this.memberConverter = memberConverter;
-        this.scientificFieldConverter = scientificFieldConverter;
-        this.academicTitleConverter = academicTitleConverter1;
-        this.academicTitleRepository = academicTitleRepository1;
-        this.scientificFieldRepository = scientificFieldRepository;
-    }
+    private final AcademicTitleHistoryConverter academicTitleHistoryConverter;
+    private final AcademicTitleHistoryRepository academicTitleHistoryRepository;
+    private final MemberRepository memberRepository;
+    private final MemberConverter memberConverter;
+    private final ScientificFieldConverter scientificFieldConverter;
+    private final AcademicTitleConverter academicTitleConverter;
+    private final AcademicTitleRepository academicTitleRepository;
+    private final ScientificFieldRepository scientificFieldRepository;
 
     @Override
     @Transactional

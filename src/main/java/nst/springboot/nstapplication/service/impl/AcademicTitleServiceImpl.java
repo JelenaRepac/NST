@@ -1,5 +1,6 @@
 package nst.springboot.nstapplication.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import nst.springboot.nstapplication.converter.impl.AcademicTitleConverter;
 import nst.springboot.nstapplication.domain.AcademicTitle;
 import nst.springboot.nstapplication.dto.AcademicTitleDto;
@@ -14,14 +15,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
+@RequiredArgsConstructor
 public class AcademicTitleServiceImpl implements AcademicTitleService {
-    private AcademicTitleConverter academicTitleConverter;
-    private AcademicTitleRepository academicTitleRepository;
 
-    public AcademicTitleServiceImpl(AcademicTitleConverter academicTitleConverter, AcademicTitleRepository academicTitleRepository) {
-        this.academicTitleConverter = academicTitleConverter;
-        this.academicTitleRepository = academicTitleRepository;
-    }
+    private final AcademicTitleConverter academicTitleConverter;
+    private final AcademicTitleRepository academicTitleRepository;
+
     @Override
     public AcademicTitleDto save(AcademicTitleDto academicTitleDTO) {
         Optional<AcademicTitle> aTitle = academicTitleRepository.findByName(academicTitleDTO.getName());

@@ -1,6 +1,6 @@
 package nst.springboot.nstapplication.service.impl;
 
-import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import nst.springboot.nstapplication.constants.ConstantsCustom;
 import nst.springboot.nstapplication.converter.impl.*;
 import nst.springboot.nstapplication.domain.*;
@@ -13,6 +13,8 @@ import nst.springboot.nstapplication.repository.*;
 import nst.springboot.nstapplication.service.MemberService;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,51 +23,32 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
-    private MemberConverter memberConverter;
-    private AcademicTitleConverter academicTitleConverter;
-    private ScientificFieldConverter scientificFieldConverter;
-    private EducationTitleConverter educationTitleConverter;
-    private SecretaryHistoryConverter secretaryHistoryConverter;
-    private HeadHistoryConverter headHistoryConverter;
-    private MemberRepository memberRepository;
-    private DepartmentRepository departmentRepository;
-    private AcademicTitleRepository academicTitleRepository;
-    private EducationTitleRepository educationTitleRepository;
-    private ScientificFieldRepository scientificFieldRepository;
-    private AcademicTitleHistoryRepository academicTitleHistoryRepository;
-    private HeadHistoryRepository headHistoryRepository;
-    private SecretaryHistoryRepository secretaryHistoryRepository;
-    private RoleRepository roleRepository;
-    private RoleConverter roleConverter;
-    private DepartmentConverter departmentConverter;
-    private AcademicTitleHistoryConverter academicTitleHistoryConverter;
+    private final MemberConverter memberConverter;
+    private final AcademicTitleConverter academicTitleConverter;
+    private final ScientificFieldConverter scientificFieldConverter;
+    private final EducationTitleConverter educationTitleConverter;
+    private final SecretaryHistoryConverter secretaryHistoryConverter;
+    private final HeadHistoryConverter headHistoryConverter;
+    private final MemberRepository memberRepository;
+    private final DepartmentRepository departmentRepository;
+    private final AcademicTitleRepository academicTitleRepository;
+    private final EducationTitleRepository educationTitleRepository;
+    private final ScientificFieldRepository scientificFieldRepository;
+    private final AcademicTitleHistoryRepository academicTitleHistoryRepository;
+    private final HeadHistoryRepository headHistoryRepository;
+    private final SecretaryHistoryRepository secretaryHistoryRepository;
+    private final RoleRepository roleRepository;
+    private final RoleConverter roleConverter;
+    private final DepartmentConverter departmentConverter;
+    private final AcademicTitleHistoryConverter academicTitleHistoryConverter;
 
-    public MemberServiceImpl(MemberConverter memberConverter, AcademicTitleConverter academicTitleConverter, ScientificFieldConverter scientificFieldConverter, EducationTitleConverter educationTitleConverter, MemberRepository memberRepository, DepartmentRepository departmentRepository, AcademicTitleRepository academicTitleRepository, EducationTitleRepository educationTitleRepository, ScientificFieldRepository scientificFieldRepository, AcademicTitleHistoryRepository academicTitleHistoryRepository, HeadHistoryRepository headHistoryRepository, SecretaryHistoryRepository secretaryHistoryRepository, RoleRepository roleRepository, RoleConverter roleConverter, DepartmentConverter departmentConverter, SecretaryHistoryConverter secretarHistoryConventer, HeadHistoryConverter headHistoryConverter, AcademicTitleHistoryConverter academicTitleHistoryConverter) {
-        this.memberConverter = memberConverter;
-        this.academicTitleConverter = academicTitleConverter;
-        this.scientificFieldConverter = scientificFieldConverter;
-        this.educationTitleConverter = educationTitleConverter;
-        this.memberRepository = memberRepository;
-        this.departmentRepository = departmentRepository;
-        this.academicTitleRepository = academicTitleRepository;
-        this.educationTitleRepository = educationTitleRepository;
-        this.scientificFieldRepository = scientificFieldRepository;
-        this.academicTitleHistoryRepository = academicTitleHistoryRepository;
-        this.headHistoryRepository = headHistoryRepository;
-        this.secretaryHistoryRepository = secretaryHistoryRepository;
-        this.roleRepository = roleRepository;
-        this.roleConverter = roleConverter;
-        this.departmentConverter = departmentConverter;
-        this.secretaryHistoryConverter = secretarHistoryConventer;
-        this.headHistoryConverter=headHistoryConverter;
-        this.academicTitleHistoryConverter = academicTitleHistoryConverter;
-    }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
-    public MemberDto save(MemberDto memberDTO) throws Exception {
+    @Transactional(rollbackFor = {Exception.class})
+    public MemberDto save(MemberDto memberDTO)  {
 
         Optional<Member> existingMember = memberRepository.findByFirstnameAndLastname(memberDTO.getFirstname(), memberDTO.getLastname());
 
@@ -123,7 +106,8 @@ public class MemberServiceImpl implements MemberService {
             if (member.getRole() == null) {
                 setDefaultMemberAttributes(member);
             } else {
-                handleRoleSpecificAttributes(member);
+               Member m= handleRoleSpecificAttributes(member);
+               member.setRole(m.getRole());
             }
 
             Member savedMember = memberRepository.save(member);
@@ -144,49 +128,76 @@ public class MemberServiceImpl implements MemberService {
         member.setRole(defaultRole);
     }
 
-    private void handleRoleSpecificAttributes(Member member) {
+    private Member handleRoleSpecificAttributes(Member member) {
         String roleName = member.getRole().getName();
 
         switch (roleName) {
             case ConstantsCustom.SECRETARY:
-                handleSecretaryAttributes(member);
+                member=handleSecretaryAttributes(member);
                 break;
             case ConstantsCustom.HEAD:
-                handleHeadAttributes(member);
+                member=handleHeadAttributes(member);
                 break;
+            case ConstantsCustom.DEFAULT_ROLE:
+                Role role= new Role();
+                role.setName(ConstantsCustom.DEFAULT_ROLE);
+                role.setId(ConstantsCustom.DEFAULT_ROLE_ID);
+                member.setRole(role);
+
             default:
                 throw new IllegalArgumentException("You provided unknown type!");
         }
+        return member;
     }
 
-    private void handleSecretaryAttributes(Member member) {
-
+    private Member handleSecretaryAttributes(Member member) {
         checkExistingMemberAndThrowException(member, ConstantsCustom.SECRETARY_ROLE_ID, "The department already has a secretary member.");
         member.setRole(roleRepository.findByName(ConstantsCustom.SECRETARY).orElseThrow(() -> new EntityNotFoundException("Secretary role not found")));
         Member savedMember = memberRepository.save(member);
         secretaryHistoryRepository.save(new SecretaryHistory(null, savedMember.getDepartment(), savedMember, LocalDate.now(), null));
+        return savedMember;
     }
 
-    private void handleHeadAttributes(Member member) {
+    private Member handleHeadAttributes(Member member) {
         checkExistingMemberAndThrowException(member, ConstantsCustom.HEAD_ROLE_ID, "The department already has a head member.");
         member.setRole(roleRepository.findByName(ConstantsCustom.HEAD).orElseThrow(() -> new EntityNotFoundException("Head role not found")));
         Member savedMember = memberRepository.save(member);
         headHistoryRepository.save(new HeadHistory(null, savedMember.getDepartment(), savedMember, LocalDate.now(),null));
+        return savedMember;
     }
     private void checkExistingMemberAndThrowException(Member member, Long roleId, String errorMessage) {
+        Role role = new Role();
         if(roleId==ConstantsCustom.SECRETARY_ROLE_ID) {
             Optional<SecretaryHistory> secretaryHistory = secretaryHistoryRepository.findCurrentSecretaryByDepartmentId(member.getDepartment().getId(), LocalDate.now());
-            if(secretaryHistory.get().getStartDate().isBefore(LocalDate.now()) && secretaryHistory.get().getEndDate()==null){
-                secretaryHistory.get().setEndDate(LocalDate.now());
-                secretaryHistoryRepository.save(secretaryHistory.get());
+            if(secretaryHistory.isPresent()){
+                if(secretaryHistory.get().getStartDate().isBefore(LocalDate.now()) && secretaryHistory.get().getEndDate()==null){
+                    secretaryHistory.get().setEndDate(LocalDate.now());
+                    Optional<Member> activeSecretary = memberRepository.findById(secretaryHistory.get().getMember().getId());
+                    if(activeSecretary.isPresent()){
+                        role.setId(ConstantsCustom.DEFAULT_ROLE_ID);
+                        activeSecretary.get().setRole(role);
+                        memberRepository.save(activeSecretary.get());
+                    }
+                    secretaryHistoryRepository.save(secretaryHistory.get());
+                }
             }
+
         }
         if(roleId==ConstantsCustom.HEAD_ROLE_ID) {
             Optional<HeadHistory> headHistory = headHistoryRepository.findCurrentHeadByDepartmentId(member.getDepartment().getId(), LocalDate.now());
-            if(headHistory.get().getStartDate().isBefore(LocalDate.now()) && headHistory.get().getEndDate()==null){
-                headHistory.get().setEndDate(LocalDate.now());
-                headHistoryRepository.save(headHistory.get());
+            if(headHistory.isPresent()){
+                if(headHistory.get().getStartDate().isBefore(LocalDate.now()) && headHistory.get().getEndDate()==null){
+                    headHistory.get().setEndDate(LocalDate.now());
+                    Optional<Member> activeHead = memberRepository.findById(headHistory.get().getMember().getId());
+                    if(activeHead.isPresent()){
+                        role.setId(ConstantsCustom.DEFAULT_ROLE_ID);
+                        activeHead.get().setRole(role);
+                        memberRepository.save(activeHead.get());
+                    }
+                    headHistoryRepository.save(headHistory.get());
+                }
             }
+
         }
     }
 
@@ -225,7 +236,7 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public MemberDto patchUpdateMember(Long memberId, MemberPatchRequest patchRequest) {
+    public MemberDto patchUpdateMember(Long memberId, Member patchRequest) {
         Member existingMember = memberRepository.findById(memberId).orElse(null);
 
         if (existingMember != null) {
@@ -236,19 +247,19 @@ public class MemberServiceImpl implements MemberService {
                 existingMember.setLastname(patchRequest.getLastname());
             }
             if (patchRequest.getRole() != null && !patchRequest.getRole().equals(existingMember.getRole())) {
-                handleRoleUpdate(existingMember, patchRequest.getRole());
+                handleRoleUpdate(existingMember, roleConverter.toDto(patchRequest.getRole()));
             }
             if (patchRequest.getAcademicTitle() != null && !patchRequest.getAcademicTitle().equals(existingMember.getAcademicTitle())) {
-                handleAcademicTitleUpdate(existingMember, patchRequest.getAcademicTitle());
+                handleAcademicTitleUpdate(existingMember, academicTitleConverter.toDto(patchRequest.getAcademicTitle()));
             }
             if (patchRequest.getDepartment() != null && !patchRequest.getDepartment().equals(existingMember.getDepartment())) {
-                handleDepartmentUpdate(existingMember, patchRequest.getDepartment());
+                handleDepartmentUpdate(existingMember, departmentConverter.toDto(patchRequest.getDepartment()));
             }
             if (patchRequest.getEducationTitle() != null && !patchRequest.getEducationTitle().equals(existingMember.getEducationTitle())) {
-                handleEducationTitle(existingMember, patchRequest.getEducationTitle());
+                handleEducationTitle(existingMember, educationTitleConverter.toDto(patchRequest.getEducationTitle()));
             }
             if (patchRequest.getScientificField() != null && !patchRequest.getScientificField().equals(existingMember.getScientificField())) {
-                handleScientificFieldUpdate(existingMember, patchRequest.getScientificField());
+                handleScientificFieldUpdate(existingMember, scientificFieldConverter.toDto(patchRequest.getScientificField()));
             }
             existingMember = memberRepository.save(existingMember);
 
@@ -398,18 +409,12 @@ public class MemberServiceImpl implements MemberService {
         Optional<HeadHistory> existingHistoryHead=headHistoryRepository.findCurrentByMemberId(existingMember.getId());
         switch (existingMember.getRole().getName()){
             case(ConstantsCustom.SECRETARY):
-                if(existingHistoryHead.isPresent()){
-                    throw new IllegalArgumentException("Member "+existingMember.getFirstname()+" "+existingMember.getLastname()+" is active HEAD!");
-                }
                 if(existingHistory.isPresent()){
                     existingHistory.get().setEndDate(LocalDate.now());
                     secretaryHistoryRepository.save(existingHistory.get());
                 }
                 break;
             case(ConstantsCustom.HEAD):
-                if(existingHistory.isPresent()){
-                    throw new IllegalArgumentException("Member "+existingMember.getFirstname()+" "+existingMember.getLastname()+" is active SECRETARY!");
-                }
                 if(existingHistoryHead.isPresent()){
                     existingHistoryHead.get().setEndDate(LocalDate.now());
                     headHistoryRepository.save(existingHistoryHead.get());
@@ -419,6 +424,7 @@ public class MemberServiceImpl implements MemberService {
 
        switch (role.getName()){
            case(ConstantsCustom.SECRETARY):
+               System.out.println("hej");
                handleSecretaryAttributes(existingMember);
                break;
            case(ConstantsCustom.HEAD):

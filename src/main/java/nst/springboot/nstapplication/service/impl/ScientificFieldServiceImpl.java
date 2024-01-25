@@ -1,5 +1,6 @@
 package nst.springboot.nstapplication.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import nst.springboot.nstapplication.converter.impl.EducationTitleConverter;
 import nst.springboot.nstapplication.converter.impl.ScientificFieldConverter;
 import nst.springboot.nstapplication.domain.EducationTitle;
@@ -18,15 +19,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
+@RequiredArgsConstructor
 public class ScientificFieldServiceImpl implements ScientificFieldService {
 
-    private ScientificFieldConverter scientificFieldConverter;
-    private ScientificFieldRepository scientificFieldRepository;
-
-    public ScientificFieldServiceImpl(ScientificFieldConverter scientificFieldConverter, ScientificFieldRepository scientificFieldRepository) {
-        this.scientificFieldConverter = scientificFieldConverter;
-        this.scientificFieldRepository = scientificFieldRepository;
-    }
+    private final ScientificFieldConverter scientificFieldConverter;
+    private final ScientificFieldRepository scientificFieldRepository;
+    
 
     @Override
     public ScientificFieldDto save(ScientificFieldDto educationTitleDTO){

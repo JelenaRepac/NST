@@ -6,12 +6,14 @@ import nst.springboot.nstapplication.dto.*;
 import nst.springboot.nstapplication.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/member")
+@Transactional
 public class MemberController {
     private final MemberService memberService;
     public MemberController(MemberService memberService) {
@@ -27,8 +29,8 @@ public class MemberController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<MemberDto> updateMember(@PathVariable Long id, @RequestBody MemberPatchRequest patchRequest) {
-        MemberDto updatedMember = memberService.patchUpdateMember(id, patchRequest);
+    public ResponseEntity<MemberDto> updateMember(@PathVariable Long id, @RequestBody Member member) {
+        MemberDto updatedMember = memberService.patchUpdateMember(id, member);
         if (updatedMember != null) {
             return ResponseEntity.ok(updatedMember);
         } else {

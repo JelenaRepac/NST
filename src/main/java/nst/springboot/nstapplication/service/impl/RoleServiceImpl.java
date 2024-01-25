@@ -1,5 +1,6 @@
 package nst.springboot.nstapplication.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import nst.springboot.nstapplication.converter.impl.RoleConverter;
 import nst.springboot.nstapplication.domain.Role;
 import nst.springboot.nstapplication.dto.RoleDto;
@@ -15,14 +16,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
-    private RoleConverter roleConverter;
-    private RoleRepository roleRepository;
 
-    public RoleServiceImpl(RoleConverter roleConverter, RoleRepository roleRepository) {
-        this.roleConverter = roleConverter;
-        this.roleRepository = roleRepository;
-    }
+    private final RoleConverter roleConverter;
+    private final RoleRepository roleRepository;
 
     @Override
     public RoleDto save(RoleDto roleDto) {

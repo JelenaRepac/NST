@@ -1,13 +1,13 @@
 package nst.springboot.nstapplication.service.impl;
 
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import nst.springboot.nstapplication.constants.ConstantsCustom;
 import nst.springboot.nstapplication.converter.impl.DepartmentConverter;
 import nst.springboot.nstapplication.converter.impl.HeadHistoryConverter;
 import nst.springboot.nstapplication.converter.impl.MemberConverter;
 import nst.springboot.nstapplication.converter.impl.SecretaryHistoryConverter;
-import nst.springboot.nstapplication.domain.Department;
-import nst.springboot.nstapplication.domain.HeadHistory;
-import nst.springboot.nstapplication.domain.Member;
-import nst.springboot.nstapplication.domain.SecretaryHistory;
+import nst.springboot.nstapplication.domain.*;
 import nst.springboot.nstapplication.dto.HeadHistoryDto;
 import nst.springboot.nstapplication.exception.EmptyResponseException;
 import nst.springboot.nstapplication.exception.EntityNotFoundException;
@@ -26,28 +26,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class HeadHistoryServiceImpl implements HeadHistoryService{
-    private HeadHistoryRepository repository;
-    private HeadHistoryConverter headHistoryConverter;
-    private MemberRepository memberRepository;
-    private MemberConverter memberConverter;
-    private DepartmentRepository departmentRepository;
-    private DepartmentConverter departmentConverter;
-    private SecretaryHistoryRepository secretaryHistoryRepository;
-    private SecretaryHistoryConverter secretaryHistoryConverter;
+    private final HeadHistoryRepository repository;
+    private final HeadHistoryConverter headHistoryConverter;
+    private final MemberRepository memberRepository;
+    private final MemberConverter memberConverter;
+    private final DepartmentRepository departmentRepository;
+    private final DepartmentConverter departmentConverter;
+    private final SecretaryHistoryRepository secretaryHistoryRepository;
+    private final MemberServiceImpl  memberService;
 
-    public HeadHistoryServiceImpl(HeadHistoryRepository repository, HeadHistoryConverter secretaryHistoryConverter, MemberRepository memberRepository, MemberConverter memberConverter, DepartmentRepository departmentRepository, DepartmentConverter departmentConverter, SecretaryHistoryRepository secretaryHistoryRepository, SecretaryHistoryConverter secretaryHistoryConverter1) {
-        this.repository = repository;
-        this.headHistoryConverter = secretaryHistoryConverter;
-        this.memberRepository = memberRepository;
-        this.memberConverter = memberConverter;
-        this.departmentRepository = departmentRepository;
-        this.departmentConverter = departmentConverter;
-        this.secretaryHistoryRepository = secretaryHistoryRepository;
-        this.secretaryHistoryConverter = secretaryHistoryConverter1;
-    }
 
     @Override
+    @Transactional()
     public HeadHistoryDto save(HeadHistoryDto headHistoryDto){
         //Ako se posalje null za start date postavlja se danasnji
         if(headHistoryDto.getStartDate() == null){
@@ -125,7 +117,12 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
             if(headHistoryDto.getEndDate() ==null && existingHistory.getEndDate() ==null) {
                 if(headHistoryDto.getStartDate().isAfter(existingHistory.getStartDate())){
                     existingHistory.setEndDate(headHistoryDto.getStartDate());
-                    repository.save(existingHistory);
+                    Optional<Member> activeMember = memberRepository.findById(existingHistory.getMember().getId());
+                    if(activeMember.isPresent()){
+                        activeMember.get().setRole(Role.builder().id(ConstantsCustom.DEFAULT_ROLE_ID).name(ConstantsCustom.DEFAULT_ROLE).build());
+                        memberService.patchUpdateMember(activeMember.get().getId(), activeMember.get());
+                        repository.save(existingHistory);
+                    }
                 }
                else{
                     throw new IllegalArgumentException("Member "+existingHistory.getMember().getFirstname()+
@@ -147,9 +144,19 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
         //Provera da li je clan trenutno na poziciji sekretara
         Optional<SecretaryHistory> activeSecretary = secretaryHistoryRepository.findCurrentByMemberId(headHistoryDto.getHead().getId(), LocalDate.now());
         if(activeSecretary.isPresent()){
-            throw new IllegalArgumentException("Member "+headHistoryDto.getHead().getFirstname()+" "+headHistoryDto.getHead().getLastname()+" " +
-                    "can't be HEAD because member is at the SECRETARY position from "+activeSecretary.get().getStartDate()+ " for department "+
-                    activeSecretary.get().getDepartment().getName());
+            if (headHistoryDto.getEndDate()==null &&
+                    ( headHistoryDto.getStartDate().isAfter(activeSecretary.get().getStartDate()) ||  headHistoryDto.getStartDate().isEqual(activeSecretary.get().getStartDate()))){
+                throw new IllegalArgumentException("Member "+headHistoryDto.getHead().getFirstname()+" "+headHistoryDto.getHead().getLastname()+" " +
+                        "can't be HEAD because member is at the SECRETARY position from "+activeSecretary.get().getStartDate()+ " for department "+activeSecretary.get().getDepartment().getName());
+            }
+        }
+
+        if(headHistoryDto.getStartDate()!=null &&
+                (headHistoryDto.getStartDate().isBefore(LocalDate.now()) || headHistoryDto.getStartDate().isEqual(LocalDate.now())) &&
+                (headHistoryDto.getEndDate()==null || headHistoryDto.getEndDate().isAfter(LocalDate.now()))){
+            existingMember.get().setRole(Role.builder().name(ConstantsCustom.HEAD).id(ConstantsCustom.HEAD_ROLE_ID).build());
+            headHistoryDto.setHead(memberService.patchUpdateMember(existingMember.get().getId(),existingMember.get()));
+
         }
 
         return headHistoryConverter.toDto(repository.save(headHistoryConverter.toEntity(headHistoryDto)));
@@ -213,6 +220,7 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
     }
 
     @Override
+    @Transactional
     public HeadHistoryDto patchHeadHistory(Long id, HeadHistoryDto headHistoryDto) {
         if(headHistoryDto.getEndDate()!=null && headHistoryDto.getStartDate()!= null){
             if(headHistoryDto.getEndDate().isBefore(headHistoryDto.getStartDate())){
@@ -270,13 +278,12 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
             if(headHistoryDto.getEndDate() == null){
                 if(headHistoryDto.getStartDate().isAfter(activeHead.get().getStartDate())){
                     activeHead.get().setEndDate(headHistoryDto.getStartDate());
-                    repository.save(activeHead.get());
-                }
-            }
-            else{
-                if(headHistoryDto.getStartDate().isAfter(activeHead.get().getStartDate())){
-                    activeHead.get().setEndDate(headHistoryDto.getStartDate());
-                    repository.save(activeHead.get());
+                    Optional<Member> member = memberRepository.findById(activeHead.get().getMember().getId());
+                    if (member.isPresent()) {
+                        member.get().setRole(Role.builder().id(ConstantsCustom.DEFAULT_ROLE_ID).name(ConstantsCustom.DEFAULT_ROLE).build());
+                        activeHead.get().setMember(memberConverter.toEntity(memberService.patchUpdateMember(member.get().getId(),existingMember.get())));
+                        repository.save(activeHead.get());
+                    }
                 }
             }
         }
@@ -284,6 +291,12 @@ public class HeadHistoryServiceImpl implements HeadHistoryService{
         existingHeadHistory.get().setStartDate(headHistoryDto.getStartDate());
         existingHeadHistory.get().setEndDate(headHistoryDto.getEndDate());
 
+
+        if(existingHeadHistory.get().getStartDate()!=null && existingHeadHistory.get().getStartDate().isBefore(LocalDate.now())
+                && (existingHeadHistory.get().getEndDate()==null || existingHeadHistory.get().getEndDate().isAfter(LocalDate.now()))){
+            existingMember.get().setRole(Role.builder().id(ConstantsCustom.SECRETARY_ROLE_ID).name(ConstantsCustom.SECRETARY).build());
+            existingHeadHistory.get().setMember(memberConverter.toEntity(memberService.patchUpdateMember(existingMember.get().getId(),existingMember.get())));
+        }
         return headHistoryConverter.toDto(repository.save(existingHeadHistory.get()));
     }
 

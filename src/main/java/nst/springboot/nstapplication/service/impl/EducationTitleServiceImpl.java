@@ -1,5 +1,6 @@
 package nst.springboot.nstapplication.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import nst.springboot.nstapplication.converter.impl.EducationTitleConverter;
 import nst.springboot.nstapplication.domain.AcademicTitle;
 import nst.springboot.nstapplication.domain.EducationTitle;
@@ -17,15 +18,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class EducationTitleServiceImpl implements EducationTitleService {
 
-    private EducationTitleConverter educationTitleConverter;
-    private EducationTitleRepository educationTitleRepository;
+    private final EducationTitleConverter educationTitleConverter;
+    private final EducationTitleRepository educationTitleRepository;
 
-    public EducationTitleServiceImpl(EducationTitleConverter educationTitleConverter, EducationTitleRepository educationTitleRepository) {
-        this.educationTitleConverter = educationTitleConverter;
-        this.educationTitleRepository = educationTitleRepository;
-    }
 
     @Override
     public EducationTitleDto save(EducationTitleDto educationTitleDTO){

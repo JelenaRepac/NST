@@ -16,8 +16,6 @@ public class AcademicTitleConverter implements DtoEntityConverter<AcademicTitleD
                 name(entity.getName()).
                 build();
     }
-
-
     @Override
     public AcademicTitle toEntity(AcademicTitleDto dto) {
         return AcademicTitle.builder().
