@@ -11,17 +11,11 @@ import java.util.List;
 public class AcademicTitleConverter implements DtoEntityConverter<AcademicTitleDto, AcademicTitle> {
     @Override
     public AcademicTitleDto toDto(AcademicTitle entity) {
-        return AcademicTitleDto.builder().
-                id(entity.getId()).
-                name(entity.getName()).
-                build();
+        return new AcademicTitleDto(entity.getId(), entity.getName());
     }
     @Override
     public AcademicTitle toEntity(AcademicTitleDto dto) {
-        return AcademicTitle.builder().
-                id(dto.getId()).
-                name(dto.getName()).
-                build();
+        return new AcademicTitle(dto.getId(),dto.getName());
     }
 
 
