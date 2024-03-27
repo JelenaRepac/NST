@@ -65,8 +65,8 @@ public class AcademicTitleServiceImpl implements AcademicTitleService {
 
                 }
             });
-            academicTitleRepository.save(academicTitle);
-            return academicTitleConverter.toDto(academicTitle);
+            AcademicTitle savedAcademicTitle= academicTitleRepository.save(academicTitle);
+            return academicTitleConverter.toDto(savedAcademicTitle);
         } else {
             throw new EntityNotFoundException("Academic title not found with id: " + id);
         }
