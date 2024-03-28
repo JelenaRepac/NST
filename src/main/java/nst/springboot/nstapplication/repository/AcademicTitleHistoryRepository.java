@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface AcademicTitleHistoryRepository extends JpaRepository<AcademicTitleHistory, Long> {
-    //get academic title history for member id
+
     List<AcademicTitleHistory> findAllByMemberIdOrderByStartDateDesc(Long memberId);
 
     @Query("SELECT at FROM AcademicTitleHistory at " +
