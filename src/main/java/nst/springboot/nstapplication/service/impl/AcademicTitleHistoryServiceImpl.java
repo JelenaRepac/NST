@@ -88,7 +88,7 @@ public class AcademicTitleHistoryServiceImpl implements AcademicTitleHistoryServ
                 throw new EntityNotFoundException("There is no scientific field with that id!");
             }
         }
-        Optional<AcademicTitleHistory> ac = academicTitleRepository.findCurrentAcademicTitleByMemberId(academicTitleDTO.getMember().getId());
+        Optional<AcademicTitleHistory> ac = academicTitleHistoryRepository.findCurrentAcademicTitleByMemberId(academicTitleDTO.getMember().getId());
         if(ac.isPresent()){
             if(academicTitleDTO.getStartDate().isBefore(ac.get().getStartDate()) && academicTitleDTO.getEndDate()==null){
                 throw new IllegalArgumentException("Actual academic title for member "+

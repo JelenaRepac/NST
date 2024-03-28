@@ -41,7 +41,7 @@ public class EducationTitleRepositoryTest {
     }
     @Test
     @DisplayName("JUnit test for find all education title operation")
-    public void givenRoleList_whenFindAll_thenRoleList(){
+    public void givenEducationTitleList_whenFindAll_thenEducationTitleList(){
         EducationTitle educationTitle1= EducationTitle.builder().name("Associate degree").build();
         EducationTitle educationTitle2= EducationTitle.builder().name("Bachelor's degree").build();
 
@@ -65,7 +65,7 @@ public class EducationTitleRepositoryTest {
     }
     @Test
     @DisplayName("JUnit test for delete education title operation")
-    public void givenRoleObject_whenDelete_thenRemoveRole() {
+    public void givenEducationTitleObject_whenDelete_thenRemoveEducationTitle() {
         educationTitleRepository.save(educationTitle);
 
         educationTitleRepository.deleteById(educationTitle.getId());
