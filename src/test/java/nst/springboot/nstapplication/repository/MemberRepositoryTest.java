@@ -1,4 +1,4 @@
-package nst.springboot.nstapplication.service;
+package nst.springboot.nstapplication.repository;
 
 import nst.springboot.nstapplication.domain.*;
 import nst.springboot.nstapplication.repository.MemberRepository;
