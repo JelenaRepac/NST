@@ -91,6 +91,15 @@ public class MemberRepositoryTest {
         assertThat(findMember).isNotNull();
     }
     @Test
+    @DisplayName("JUnit test for finding all members by department id")
+    public void givenDepartmentId_whenFindAllByDepartmentId_thenReturnMemberList(){
+        memberRepository.save(member);
+
+        List<Member> result = memberRepository.findAllByDepartmentId(member.getDepartment().getId());
+        assertEquals(1, result.size());
+
+    }
+    @Test
     @DisplayName("JUnit test for delete member operation")
     public void givenMemberObject_whenDelete_thenRemoveMember() {
         memberRepository.save(member);
@@ -100,7 +109,6 @@ public class MemberRepositoryTest {
 
         assertThat(deletedMember).isEmpty();
     }
-
     @Test
     @DisplayName("JUnit test for finding member by firstname and lastname")
     public void givenMemberNameAndLastname_whenFindByNameAndLastname_thenReturnMemberObject(){
@@ -113,14 +121,6 @@ public class MemberRepositoryTest {
     }
 
 
-    @Test
-    @DisplayName("JUnit test for finding all members by department id")
-    public void givenDepartmentId_whenFindAllByDepartmentId_thenReturnMemberList(){
-        memberRepository.save(member);
 
-        List<Member> result = memberRepository.findAllByDepartmentId(1L);
-        assertEquals(1, result.size());
-
-    }
 
 }
