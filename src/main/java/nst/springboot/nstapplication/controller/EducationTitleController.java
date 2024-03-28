@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/educationTitle")
-@Hidden
+
 public class EducationTitleController {
     //Controller for education title
     //ENDPOINTS -> saving, getAll, getById, partialUpdate

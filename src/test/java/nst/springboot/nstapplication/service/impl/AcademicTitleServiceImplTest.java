@@ -9,9 +9,11 @@ import nst.springboot.nstapplication.exception.EntityNotFoundException;
 import nst.springboot.nstapplication.repository.AcademicTitleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.*;
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.*;
 
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class AcademicTitleServiceImplTest {
 
     @Mock
@@ -32,20 +35,21 @@ class AcademicTitleServiceImplTest {
     @InjectMocks
     private AcademicTitleServiceImpl academicTitleService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
+//    @BeforeEach
+//    void setUp() {
+//        MockitoAnnotations.initMocks(this);
+//    }
     @Test
     void testSaveNewAcademicTitleSuccessfullySaved() {
 
         AcademicTitleDto academicTitleDto = new AcademicTitleDto();
         academicTitleDto.setName("Teaching Assistant");
+        academicTitleDto.setId(1L);
 
         when(academicTitleRepository.findByName("Teaching Assistant")).thenReturn(Optional.empty());
         when(academicTitleConverter.toEntity(academicTitleDto)).thenReturn(new AcademicTitle());
-        when(academicTitleRepository.save(any())).thenReturn(new AcademicTitle());
-        when(academicTitleConverter.toDto(any())).thenReturn(new AcademicTitleDto());
+        when(academicTitleConverter.toEntity(academicTitleDto)).thenReturn(new AcademicTitle(academicTitleDto.getId(), academicTitleDto.getName()));
+        when(academicTitleConverter.toDto(any())).thenReturn(academicTitleDto);
 
         AcademicTitleDto savedAcademicTitleDto = academicTitleService.save(academicTitleDto);
 
@@ -136,3 +140,4 @@ class AcademicTitleServiceImplTest {
 
 
 }
+

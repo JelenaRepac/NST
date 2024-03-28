@@ -10,10 +10,7 @@ public class EducationTitleConverter implements DtoEntityConverter<EducationTitl
 
     @Override
     public EducationTitleDto toDto(EducationTitle entity) {
-        return EducationTitleDto.builder().
-                id(entity.getId()).
-                name(entity.getName()).
-                build();
+        return new EducationTitleDto(entity.getId(), entity.getName());
     }
 
     @Override

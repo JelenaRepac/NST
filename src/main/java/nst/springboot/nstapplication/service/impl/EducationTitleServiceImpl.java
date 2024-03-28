@@ -69,8 +69,9 @@ public class EducationTitleServiceImpl implements EducationTitleService {
 
                 }
             });
-            educationTitleRepository.save(educationTitle);
-            return educationTitleConverter.toDto(educationTitle);
+            EducationTitle savedEducationTitle= educationTitleRepository.save(educationTitle);
+            System.out.println(savedEducationTitle.getName());
+            return educationTitleConverter.toDto(savedEducationTitle);
         } else {
             throw new EntityNotFoundException("Education title not found with id: " + id);
         }

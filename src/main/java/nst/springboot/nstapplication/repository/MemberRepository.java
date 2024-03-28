@@ -13,7 +13,6 @@ import java.util.Optional;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAllByDepartmentId(Long id);
 
-    Optional<Member> findByDepartmentNameAndRoleId(String name, long l);
     @Query("SELECT m FROM Member m " +
             "JOIN FETCH m.department " +
             "JOIN FETCH m.role " +
